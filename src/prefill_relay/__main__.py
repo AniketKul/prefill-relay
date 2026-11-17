@@ -1,4 +1,4 @@
-"""Commands: search CONFIG, demo (optional PyTorch)."""
+"""Commands: search CONFIG, demo, profile and bench (optional model extras)."""
 import argparse
 import csv
 import json
@@ -41,12 +41,13 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
     p=sub.add_parser('search'); p.add_argument('config',type=Path); p.add_argument('--output',type=Path)
-    sub.add_parser('demo',add_help=False)
+    for command in ('demo','profile','bench'): sub.add_parser(command,add_help=False)
     args,extra=parser.parse_known_args()
-    if args.command=='demo':
-        from .demo import main as demo_main
+    if args.command in ('demo','profile','bench'):
+        from importlib import import_module
         import sys
-        sys.argv=[sys.argv[0],*extra]; demo_main(); return
+        module={'demo':'demo','profile':'hf_profile','bench':'bench'}[args.command]
+        sys.argv=[sys.argv[0],*extra]; import_module('.'+module,__package__).main(); return
     if extra: parser.error('unrecognized arguments: '+' '.join(extra))
     result,rows=search(json.loads(args.config.read_text()))
     if args.output:

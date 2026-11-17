@@ -56,6 +56,8 @@ class Controller:
         self.last_time=now
         abundant=bandwidth_bytes_s>0 and utilization<self.utilization_trigger and queue_depth<self.queue_trigger
         long_due=self.last_long is None or now-self.last_long>=self.long_interval
+        if self.current and bandwidth_bytes_s==0 and self.current['prefill_instances']==0 and self.args[4]>1:
+            long_due=True
         changed=bandwidth_bytes_s!=self.bandwidth or abundant!=self.bandwidth_abundant
         if workload is not None:
             self.args=(workload,*self.args[1:])

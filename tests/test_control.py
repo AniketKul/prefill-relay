@@ -4,6 +4,15 @@ from prefill_relay.scheduler import Router, Controller
 from prefill_relay.analytics import Profile, Workload
 
 class ControlTests(unittest.TestCase):
+    def test_outage_reallocates_zero_prefill_immediately(self):
+        p=Profile((1,100),(.1,.1),(100,100))
+        control=Controller(Workload(3,.5,1,100),p,p,2,2,100000,1,1,1,[0,10,20,50,100])
+        self.assertEqual(control.update(0,100000,0,0)['prefill_instances'],0)
+        recovered=control.update(1,0,0,0)
+        self.assertEqual(recovered['prefill_instances'],1)
+        self.assertGreater(recovered['throughput'],0)
+        self.assertEqual(control.router.route(50,0,0,False).target,'local')
+
     def test_cache_requires_exact_recurrent_checkpoint(self):
         c=HybridCache(block_tokens=2,block_bytes=16,capacity_blocks=20,namespace='model-a')
         c.put((1,2,3,4),{'full':(b'ab',b'cd')},{'linear':b'state4'})

@@ -11,9 +11,28 @@ dependencies = []
 
 [project.optional-dependencies]
 gpu = ["torch==2.6.0"]
+trained = ["torch==2.6.0", "transformers==5.18.0", "numpy>=1.26,<2", "setuptools>=68", "flash-linear-attention==0.4.1; sys_platform == 'linux'"]
+
+cuda-kernels = ["causal-conv1d==1.5.3.post1; sys_platform == 'linux'"]
 
 [project.scripts]
 prefill-relay = "prefill_relay.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.extra-build-dependencies]
+causal-conv1d = [
+  { requirement = "torch", match-runtime = true },
+  "ninja==1.13.2",
+  "setuptools==80.10.2",
+  "wheel==0.48.0",
+]
+
+[tool.uv.extra-build-variables]
+causal-conv1d = { CAUSAL_CONV1D_FORCE_BUILD = "TRUE", MAX_JOBS = "2" }
+
+[[tool.uv.dependency-metadata]]
+name = "causal-conv1d"
+version = "1.5.3.post1"
+requires-dist = ["torch", "packaging", "ninja"]
