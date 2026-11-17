@@ -1,7 +1,7 @@
 import unittest
-from prfaas.cache import HybridCache, CacheDirectory
-from prfaas.scheduler import Router, Controller
-from prfaas.analytics import Profile, Workload
+from prefill_relay.cache import HybridCache, CacheDirectory
+from prefill_relay.scheduler import Router, Controller
+from prefill_relay.analytics import Profile, Workload
 
 class ControlTests(unittest.TestCase):
     def test_cache_requires_exact_recurrent_checkpoint(self):

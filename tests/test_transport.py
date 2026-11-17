@@ -4,8 +4,8 @@ import unittest
 from unittest.mock import patch
 import json
 import hashlib
-from prfaas.transport import Receiver, StreamSender, send_frame
-from prfaas.cache import HybridCache
+from prefill_relay.transport import Receiver, StreamSender, send_frame
+from prefill_relay.cache import HybridCache
 
 class TransportTests(unittest.TestCase):
     def test_parallel_streaming_ack_and_release(self):

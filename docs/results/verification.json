@@ -1,16 +1,20 @@
 {
-  "timestamp_utc": "2026-11-17T03:09:52.586391+00:00",
-  "source_manifest_sha256": "fda034762fd88bf852ee1853292343c81147989087498af385f2d9743e229f0d",
+  "timestamp_utc": "2026-11-17T03:42:18.094831+00:00",
+  "source_manifest_sha256": "7dcb0729eb8ac1aeb37f980ec14ef50ce6a01d7845edd5b35789fb93f554c74c",
   "source_hashes_verified_on_H100": true,
+  "environment": "uv sync --locked --extra gpu",
+  "test_environment": {
+    "PREFILL_RELAY_TEST_DEVICE": "cuda"
+  },
   "checks": [
     {
       "name": "h100-tests",
-      "command": "/usr/bin/python3 -m unittest discover -s tests -v",
+      "command": "uv run --locked --extra gpu python -m unittest discover -s tests -v",
       "exit_code": 0
     },
     {
       "name": "h100-demo",
-      "command": "/usr/bin/python3 -m prfaas demo --device cuda --prompt-tokens 2048 --prefix-tokens 512 --decode-tokens 16",
+      "command": "uv run --locked --extra gpu prefill-relay demo --device cuda --prompt-tokens 2048 --prefix-tokens 512 --decode-tokens 16",
       "exit_code": 0
     }
   ],
@@ -20,5 +24,6 @@
   "torch": "2.6.0+cu124",
   "cuda": "12.4",
   "device": "NVIDIA H100 PCIe",
-  "validation_scope": "single H100, untrained hybrid correctness model, TCP loopback; not cross-datacenter performance validation"
+  "validation_scope": "single H100, untrained hybrid correctness model, TCP loopback; not cross-datacenter performance validation",
+  "warning": "PyTorch emitted an optional NumPy initialization warning; the backend does not use NumPy."
 }

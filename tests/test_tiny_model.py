@@ -1,4 +1,4 @@
-"""Numerical cache-handoff checks; PRFAAS_TEST_DEVICE=cuda enables H100 checks."""
+"""Numerical cache-handoff checks; PREFILL_RELAY_TEST_DEVICE=cuda enables H100 checks."""
 import hashlib
 import json
 import os
@@ -11,13 +11,13 @@ except ImportError:
     torch = None
 
 if torch is not None:
-    from prfaas.tiny_model import TinyHybrid, encode_state, decode_state, delta, merge
+    from prefill_relay.tiny_model import TinyHybrid, encode_state, decode_state, delta, merge
 
 
 @unittest.skipIf(torch is None, 'optional torch dependency is not installed')
 class TinyModelTests(unittest.TestCase):
     def setUp(self):
-        self.device = os.environ.get('PRFAAS_TEST_DEVICE', 'cpu')
+        self.device = os.environ.get('PREFILL_RELAY_TEST_DEVICE', 'cpu')
         self.model = TinyHybrid().to(self.device).eval()
         self.tokens = torch.tensor([3, 8, 6, 9, 12, 14, 7, 18, 21, 4, 11], device=self.device)
 

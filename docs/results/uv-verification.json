@@ -1,17 +1,15 @@
 {
-  "timestamp_utc": "2026-11-17T03:29:23.197317+00:00",
-  "scope": "uv environment management and CPU validation; previous H100 evidence remains a separate snapshot",
+  "timestamp_utc": "2026-11-17T03:40:16.068565+00:00",
+  "scope": "uv-managed CPU validation and package build",
   "commands": [
-    "uv sync --locked",
-    "uv run --locked python -m unittest discover -s tests -v",
     "uv sync --locked --extra gpu",
     "uv run --locked --extra gpu python -m unittest discover -s tests -v",
-    "uv run --locked --extra gpu prfaas demo --device cpu --prompt-tokens 128 --prefix-tokens 32 --decode-tokens 2"
+    "uv run --locked --extra gpu prefill-relay search config/example.json --output docs/results/illustrative",
+    "uv run --locked --extra gpu prefill-relay demo --device cpu --prompt-tokens 128 --prefix-tokens 32 --decode-tokens 2",
+    "uv build"
   ],
   "python": "3.10.19",
   "torch": "2.6.0",
-  "core_tests_passed": 18,
-  "core_tests_skipped": 10,
   "cpu_extra_tests_passed": 28,
   "cpu_extra_tests_skipped": 0,
   "cpu_demo_cases": [
@@ -23,8 +21,8 @@
   "warning": "PyTorch emitted an optional NumPy initialization warning; the backend does not use NumPy.",
   "file_sha256": {
     ".python-version": "7a41a41354ab8049091ef1a00253ca00567f5a1d3f9aef5502c0b4b5ce9ae707",
-    "uv.lock": "ec867db8b475a58dced36021aa35495461c132babc70a1c67c06905c6f3588c2",
-    "pyproject.toml": "686900e2beced260efb92a16a95b55a7d4d2ec101871a366f6084a280fe2cf64",
-    "README.md": "70303f94f2031d57426f4500828e8394af519a5bb6f434e27ff363ded2ca10d0"
+    "uv.lock": "1431f7de17eecc9a9bbb3d240eaade5bfdc491e63b59a283892f3c9f35788e3d",
+    "pyproject.toml": "fe50753c4c0c693f269b58907e5df01edfffb2f897e0f08f58547ee74acf0c2c",
+    "README.md": "4a10adc8decfef93565e38ccc99433fe75dde4176cc9252add24616a452fff3d"
   }
 }

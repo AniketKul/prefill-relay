@@ -46,7 +46,7 @@ def run_case(model,tokens,decode_tokens,local_prefix,remote_prefix,threshold,abu
     for pool,n in ((local,local_prefix),(remote,remote_prefix)):
         if n:
             _,state=model(tokens[:n]); cache_state(pool,state)
-    directory=CacheDirectory(); directory.register('local','pd-p',local); directory.register('remote','prfaas',remote)
+    directory=CacheDirectory(); directory.register('local','pd-p',local); directory.register('remote','prefill-relay',remote)
     _,lpd=directory.best('local',local.namespace,tokens.tolist())
     _,lremote=directory.best('remote',remote.namespace,tokens.tolist())
     placement=Router(threshold).route(len(tokens),lpd,lremote,abundant)

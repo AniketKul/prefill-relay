@@ -1,33 +1,30 @@
-test_equations_and_aggregate_bandwidth (test_analytics.AnalyticsTests.test_equations_and_aggregate_bandwidth) ... ok
-test_invalid_values_rejected (test_analytics.AnalyticsTests.test_invalid_values_rejected) ... ok
-test_search_is_global_best_on_supplied_grid (test_analytics.AnalyticsTests.test_search_is_global_best_on_supplied_grid) ... ok
-test_truncated_distribution (test_analytics.AnalyticsTests.test_truncated_distribution) ... ok
-test_unused_stages_do_not_limit_capacity (test_analytics.AnalyticsTests.test_unused_stages_do_not_limit_capacity) ... ok
-test_cache_requires_exact_recurrent_checkpoint (test_control.ControlTests.test_cache_requires_exact_recurrent_checkpoint) ... ok
-test_controller_short_and_long_timescales (test_control.ControlTests.test_controller_short_and_long_timescales) ... ok
-test_lru_and_namespace (test_control.ControlTests.test_lru_and_namespace) ... ok
-test_pinned_transfer_shared_capacity_and_cleanup (test_control.ControlTests.test_pinned_transfer_shared_capacity_and_cleanup) ... ok
-test_routing_bandwidth_and_cache_branches (test_control.ControlTests.test_routing_bandwidth_and_cache_branches) ... ok
-test_end_to_end_paths (test_demo.DemoTests.test_end_to_end_paths) ... skipped 'optional torch dependency is not installed'
-test_example_search_includes_baselines (test_experiment.ExperimentTests.test_example_search_includes_baselines) ... ok
-test_corrupt_or_truncated_serialization_is_rejected (test_tiny_model.TinyModelTests.test_corrupt_or_truncated_serialization_is_rejected) ... skipped 'optional torch dependency is not installed'
-test_decode_handoff_matches_every_next_token (test_tiny_model.TinyModelTests.test_decode_handoff_matches_every_next_token) ... skipped 'optional torch dependency is not installed'
-test_delta_replaces_recurrent_state_and_sends_only_missing_kv (test_tiny_model.TinyModelTests.test_delta_replaces_recurrent_state_and_sends_only_missing_kv) ... skipped 'optional torch dependency is not installed'
-test_empty_base_delta (test_tiny_model.TinyModelTests.test_empty_base_delta) ... skipped 'optional torch dependency is not installed'
-test_forged_dimensions_are_rejected_before_allocation (test_tiny_model.TinyModelTests.test_forged_dimensions_are_rejected_before_allocation) ... skipped 'optional torch dependency is not installed'
-test_incremental_logits_match_full_recomputation (test_tiny_model.TinyModelTests.test_incremental_logits_match_full_recomputation) ... skipped 'optional torch dependency is not installed'
-test_invalid_inputs_and_cache_are_rejected (test_tiny_model.TinyModelTests.test_invalid_inputs_and_cache_are_rejected) ... skipped 'optional torch dependency is not installed'
-test_layer_callback_is_complete_and_serializable (test_tiny_model.TinyModelTests.test_layer_callback_is_complete_and_serializable) ... skipped 'optional torch dependency is not installed'
-test_model_mismatch_is_rejected (test_tiny_model.TinyModelTests.test_model_mismatch_is_rejected) ... skipped 'optional torch dependency is not installed'
-test_checksum_and_truncation_release_capacity (test_transport.TransportTests.test_checksum_and_truncation_release_capacity) ... ok
-test_failed_send_releases_explicitly_aborted_transfer (test_transport.TransportTests.test_failed_send_releases_explicitly_aborted_transfer) ... ok
-test_oversized_header_rejected (test_transport.TransportTests.test_oversized_header_rejected) ... ok
-test_parallel_streaming_ack_and_release (test_transport.TransportTests.test_parallel_streaming_ack_and_release) ... ok
-test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests.test_partial_request_discard_reclaims_receiver_memory) ... ok
-test_receiver_bound_and_idempotent_retry (test_transport.TransportTests.test_receiver_bound_and_idempotent_retry) ... ok
-test_reservation_commits_before_ack (test_transport.TransportTests.test_reservation_commits_before_ack) ... ok
-
-----------------------------------------------------------------------
-Ran 28 tests in 0.381s
-
-OK (skipped=10)
+test_equations_and_aggregate_bandwidth (test_analytics.AnalyticsTests) ... ok
+test_invalid_values_rejected (test_analytics.AnalyticsTests) ... ok
+test_search_is_global_best_on_supplied_grid (test_analytics.AnalyticsTests) ... ok
+test_truncated_distribution (test_analytics.AnalyticsTests) ... ok
+test_unused_stages_do_not_limit_capacity (test_analytics.AnalyticsTests) ... ok
+test_cache_requires_exact_recurrent_checkpoint (test_control.ControlTests) ... ok
+test_controller_short_and_long_timescales (test_control.ControlTests) ... ok
+test_lru_and_namespace (test_control.ControlTests) ... ok
+test_pinned_transfer_shared_capacity_and_cleanup (test_control.ControlTests) ... ok
+test_routing_bandwidth_and_cache_branches (test_control.ControlTests) ... ok
+test_end_to_end_paths (test_demo.DemoTests) ... ok
+test_example_search_includes_baselines (test_experiment.ExperimentTests) ... ok
+test_corrupt_or_truncated_serialization_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_decode_handoff_matches_every_next_token (test_tiny_model.TinyModelTests) ... ok
+test_delta_replaces_recurrent_state_and_sends_only_missing_kv (test_tiny_model.TinyModelTests) ... ok
+test_empty_base_delta (test_tiny_model.TinyModelTests) ... ok
+test_forged_dimensions_are_rejected_before_allocation (test_tiny_model.TinyModelTests) ... ok
+test_incremental_logits_match_full_recomputation (test_tiny_model.TinyModelTests) ... ok
+test_invalid_inputs_and_cache_are_rejected (test_tiny_model.TinyModelTests) ... ok
+test_layer_callback_is_complete_and_serializable (test_tiny_model.TinyModelTests) ... ok
+test_model_mismatch_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_checksum_and_truncation_release_capacity (test_transport.TransportTests) ... ok
+test_failed_send_releases_explicitly_aborted_transfer (test_transport.TransportTests) ... ok
+test_oversized_header_rejected (test_transport.TransportTests) ... ok
+test_parallel_streaming_ack_and_release (test_transport.TransportTests) ... ok
+test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests) ... ok
+test_receiver_bound_and_idempotent_retry (test_transport.TransportTests) ... ok
+test_reservation_commits_before_ack (test_transport.TransportTests) ... ok
+Ran 28 tests in 0.685s
+OK

@@ -16,7 +16,7 @@ def search(config):
     homogeneous,_=grid_search(w,remote,local,0,config['homogeneous_instances'],*settings,[w.high])
     naive,_=grid_search(w,remote,local,config['remote_instances'],config['local_instances'],*settings,[0],prefill_counts=[0])
     return {'kind':'analytical capacity from supplied profiles; not measured TTFT','provenance':config['provenance'],
-            'prfaas':best,'homogeneous':homogeneous,'naive_heterogeneous':naive},rows
+            'prefill_relay':best,'homogeneous':homogeneous,'naive_heterogeneous':naive},rows
 
 
 def write_sweep_svg(path,rows,best):
@@ -53,7 +53,7 @@ def main():
         args.output.mkdir(parents=True,exist_ok=True)
         with (args.output/'sweep.csv').open('w',newline='') as f:
             writer=csv.DictWriter(f,fieldnames=list(rows[0])); writer.writeheader(); writer.writerows(rows)
-        write_sweep_svg(args.output/'sweep.svg',rows,result['prfaas'])
+        write_sweep_svg(args.output/'sweep.svg',rows,result['prefill_relay'])
         (args.output/'results.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
     print(json.dumps(result,indent=2,allow_nan=False))
 

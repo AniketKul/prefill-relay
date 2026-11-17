@@ -1,20 +1,20 @@
-# PrfaaS
+# prefill-relay
 
-PrfaaS routes long-context prefill to remote compute, keeps shorter work local, and transfers hybrid KV state over TCP for local decode. It includes a capacity model, a scheduling controller, a bounded prefix-cache pool, and an executable GPU correctness demo.
+prefill-relay routes long-context prefill to remote compute, keeps shorter work local, and transfers hybrid KV state over TCP for local decode. It includes a capacity model, a scheduling controller, a bounded prefix-cache pool, and an executable GPU correctness demo.
 
 ## Quick start
 
 The scheduling, cache, transport, and analytical modules use Python 3.10+ and the standard library. Use `uv` to install the project and run commands; `uv.lock` pins its dependencies. The project selects Python 3.10, and the GPU extra pins the validated PyTorch 2.6.0 release.
 
 ```bash
-git clone https://github.com/AniketKul/prfaas.git
-cd prfaas
+git clone https://github.com/AniketKul/prefill-relay.git
+cd prefill-relay
 uv sync --locked
-uv run --locked prfaas search config/example.json --output docs/results/illustrative
+uv run --locked prefill-relay search config/example.json --output docs/results/illustrative
 uv run --locked python -m unittest discover -s tests -v
 ```
 
-For an existing checkout at `~/prfaas`, start with `cd ~/prfaas`.
+For an existing checkout at `~/prefill-relay`, start with `cd ~/prefill-relay`. Python imports use `prefill_relay`; the CLI command is `prefill-relay`.
 
 The search command writes a JSON comparison, the complete grid in CSV, and an SVG chart. The bundled profiles are **synthetic examples**. Replace them with measured profiles to evaluate your hardware. Capacity estimates do not measure queueing latency or time to first token.
 
@@ -31,8 +31,8 @@ uv sync --locked --extra gpu
 Then run:
 
 ```bash
-PRFAAS_TEST_DEVICE=cuda uv run --locked --extra gpu python -m unittest discover -s tests -v
-uv run --locked --extra gpu prfaas demo --device cuda \
+PREFILL_RELAY_TEST_DEVICE=cuda uv run --locked --extra gpu python -m unittest discover -s tests -v
+uv run --locked --extra gpu prefill-relay demo --device cuda \
   --prompt-tokens 2048 --prefix-tokens 512 --decode-tokens 16 --connections 4
 ```
 

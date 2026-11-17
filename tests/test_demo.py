@@ -5,8 +5,8 @@ import unittest
 @unittest.skipUnless(importlib.util.find_spec('torch'),'optional torch dependency is not installed')
 class DemoTests(unittest.TestCase):
     def test_end_to_end_paths(self):
-        from prfaas.demo import run_demo
-        result=run_demo(os.environ.get('PRFAAS_TEST_DEVICE','cpu'),128,32,2,2)
+        from prefill_relay.demo import run_demo
+        result=run_demo(os.environ.get('PREFILL_RELAY_TEST_DEVICE','cpu'),128,32,2,2)
         cases=result['cases']
         self.assertTrue(all(c['correct'] for c in cases.values()))
         self.assertEqual(cases['cold_remote']['layers_streamed'],4)

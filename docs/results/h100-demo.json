@@ -16,7 +16,7 @@
       "migrated_prefix": false,
       "transferred_bytes": 604768,
       "layers_streamed": 4,
-      "prefill_handoff_s": 0.044646624475717545,
+      "prefill_handoff_s": 0.04148317500948906,
       "max_abs_logit_error": 3.5762786865234375e-07,
       "generated_tokens": [
         143,
@@ -40,7 +40,7 @@
         "bytes": 604768,
         "failures": 0,
         "queue_depth": 0,
-        "elapsed_s": 0.03751484677195549
+        "elapsed_s": 0.034961018711328506
       },
       "correct": true
     },
@@ -53,7 +53,7 @@
       "migrated_prefix": false,
       "transferred_bytes": 457312,
       "layers_streamed": 4,
-      "prefill_handoff_s": 0.020524639636278152,
+      "prefill_handoff_s": 0.022854093462228775,
       "max_abs_logit_error": 4.76837158203125e-07,
       "generated_tokens": [
         143,
@@ -77,7 +77,7 @@
         "bytes": 457312,
         "failures": 0,
         "queue_depth": 0,
-        "elapsed_s": 0.01775750145316124
+        "elapsed_s": 0.019810311496257782
       },
       "correct": true
     },
@@ -90,7 +90,7 @@
       "migrated_prefix": true,
       "transferred_bytes": 148843,
       "layers_streamed": 0,
-      "prefill_handoff_s": 0.030440490692853928,
+      "prefill_handoff_s": 0.030415114015340805,
       "max_abs_logit_error": 3.5762786865234375e-07,
       "generated_tokens": [
         83,
@@ -122,7 +122,7 @@
       "migrated_prefix": false,
       "transferred_bytes": 0,
       "layers_streamed": 0,
-      "prefill_handoff_s": 0.0035693608224391937,
+      "prefill_handoff_s": 0.0036188773810863495,
       "max_abs_logit_error": 3.5762786865234375e-07,
       "generated_tokens": [
         83,

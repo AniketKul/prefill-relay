@@ -360,7 +360,7 @@ wheels = [
 ]
 
 [[package]]
-name = "prfaas"
+name = "prefill-relay"
 version = "0.1.0"
 source = { editable = "." }
 

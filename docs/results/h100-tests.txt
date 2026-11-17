@@ -26,8 +26,5 @@ test_parallel_streaming_ack_and_release (test_transport.TransportTests) ... ok
 test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests) ... ok
 test_receiver_bound_and_idempotent_retry (test_transport.TransportTests) ... ok
 test_reservation_commits_before_ack (test_transport.TransportTests) ... ok
-
-----------------------------------------------------------------------
-Ran 28 tests in 1.662s
-
+Ran 28 tests in 1.603s
 OK

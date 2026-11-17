@@ -1,6 +1,6 @@
 import math
 import unittest
-from prfaas.analytics import Profile, Workload, capacity, grid_search, kv_rate, required_egress
+from prefill_relay.analytics import Profile, Workload, capacity, grid_search, kv_rate, required_egress
 
 class AnalyticsTests(unittest.TestCase):
     def setUp(self):
