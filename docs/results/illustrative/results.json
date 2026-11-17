@@ -1,0 +1,43 @@
+{
+  "kind": "analytical capacity from supplied profiles; not measured TTFT",
+  "provenance": "ILLUSTRATIVE ONLY: synthetic profiles and decode settings; not measured hardware performance.",
+  "prfaas": {
+    "threshold": 4096,
+    "p": 0.5898507503490755,
+    "mean_long": 9651.223955621066,
+    "mean_short": 2510.206308485019,
+    "prefill_instances": 2,
+    "decode_instances": 4,
+    "throughput": 8.404476189163988,
+    "remote_capacity": 4.957386586469317,
+    "local_capacity": 6.366085534396133,
+    "decode_capacity": 12.5,
+    "egress_gbps": 0.09798624907388358
+  },
+  "homogeneous": {
+    "threshold": 65536,
+    "p": 0.0,
+    "mean_long": null,
+    "mean_short": 6722.340925904207,
+    "prefill_instances": 5,
+    "decode_instances": 3,
+    "throughput": 6.8017458117845155,
+    "remote_capacity": 0.0,
+    "local_capacity": 6.8017458117845155,
+    "decode_capacity": 9.375,
+    "egress_gbps": 0.0
+  },
+  "naive_heterogeneous": {
+    "threshold": 0,
+    "p": 1.0,
+    "mean_long": 6722.340925904207,
+    "mean_short": null,
+    "prefill_instances": 0,
+    "decode_instances": 6,
+    "throughput": 6.752662333173884,
+    "remote_capacity": 6.752662333173884,
+    "local_capacity": 0.0,
+    "decode_capacity": 18.75,
+    "egress_gbps": 0.09296629424354631
+  }
+}

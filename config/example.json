@@ -1,0 +1,75 @@
+{
+  "provenance": "ILLUSTRATIVE ONLY: synthetic profiles and decode settings; not measured hardware performance.",
+  "workload": {
+    "mu": 8.5,
+    "sigma": 0.8,
+    "low": 128,
+    "high": 65536
+  },
+  "remote_profile": {
+    "lengths": [
+      128,
+      1024,
+      4096,
+      16384,
+      65536
+    ],
+    "seconds": [
+      0.05,
+      0.08,
+      0.2,
+      0.65,
+      2.9
+    ],
+    "kv_bytes": [
+      65536,
+      262144,
+      1048576,
+      4194304,
+      16777216
+    ]
+  },
+  "local_profile": {
+    "lengths": [
+      128,
+      1024,
+      4096,
+      16384,
+      65536
+    ],
+    "seconds": [
+      0.08,
+      0.14,
+      0.5,
+      1.6,
+      7.2
+    ],
+    "kv_bytes": [
+      65536,
+      262144,
+      1048576,
+      4194304,
+      16777216
+    ]
+  },
+  "remote_instances": 2,
+  "local_instances": 6,
+  "homogeneous_instances": 8,
+  "bandwidth_gbps": 10,
+  "batch_max": 16,
+  "decode_step_s": 0.02,
+  "output_tokens": 256,
+  "thresholds": [
+    0,
+    1024,
+    2048,
+    4096,
+    8192,
+    12288,
+    16384,
+    24576,
+    32768,
+    49152,
+    65536
+  ]
+}

@@ -1,0 +1,33 @@
+test_equations_and_aggregate_bandwidth (test_analytics.AnalyticsTests) ... ok
+test_invalid_values_rejected (test_analytics.AnalyticsTests) ... ok
+test_search_is_global_best_on_supplied_grid (test_analytics.AnalyticsTests) ... ok
+test_truncated_distribution (test_analytics.AnalyticsTests) ... ok
+test_unused_stages_do_not_limit_capacity (test_analytics.AnalyticsTests) ... ok
+test_cache_requires_exact_recurrent_checkpoint (test_control.ControlTests) ... ok
+test_controller_short_and_long_timescales (test_control.ControlTests) ... ok
+test_lru_and_namespace (test_control.ControlTests) ... ok
+test_pinned_transfer_shared_capacity_and_cleanup (test_control.ControlTests) ... ok
+test_routing_bandwidth_and_cache_branches (test_control.ControlTests) ... ok
+test_end_to_end_paths (test_demo.DemoTests) ... ok
+test_example_search_includes_baselines (test_experiment.ExperimentTests) ... ok
+test_corrupt_or_truncated_serialization_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_decode_handoff_matches_every_next_token (test_tiny_model.TinyModelTests) ... ok
+test_delta_replaces_recurrent_state_and_sends_only_missing_kv (test_tiny_model.TinyModelTests) ... ok
+test_empty_base_delta (test_tiny_model.TinyModelTests) ... ok
+test_forged_dimensions_are_rejected_before_allocation (test_tiny_model.TinyModelTests) ... ok
+test_incremental_logits_match_full_recomputation (test_tiny_model.TinyModelTests) ... ok
+test_invalid_inputs_and_cache_are_rejected (test_tiny_model.TinyModelTests) ... ok
+test_layer_callback_is_complete_and_serializable (test_tiny_model.TinyModelTests) ... ok
+test_model_mismatch_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_checksum_and_truncation_release_capacity (test_transport.TransportTests) ... ok
+test_failed_send_releases_explicitly_aborted_transfer (test_transport.TransportTests) ... ok
+test_oversized_header_rejected (test_transport.TransportTests) ... ok
+test_parallel_streaming_ack_and_release (test_transport.TransportTests) ... ok
+test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests) ... ok
+test_receiver_bound_and_idempotent_retry (test_transport.TransportTests) ... ok
+test_reservation_commits_before_ack (test_transport.TransportTests) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 1.662s
+
+OK

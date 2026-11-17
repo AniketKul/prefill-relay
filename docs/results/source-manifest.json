@@ -1,0 +1,18 @@
+{
+  "config/example.json": "974748b88cfc99a4261baa6a0a9ff428b9126cc389e5ea8a0c4c0915d782e760",
+  "pyproject.toml": "6921420672e6fd3d8a2bc480a8e51259561d6ce19d12cfd804da68065693cc74",
+  "src/prfaas/__init__.py": "32abf6ae98826537d67163103705adf523e85d1359e62504f36f57f70ad3c5bf",
+  "src/prfaas/__main__.py": "9bb40a47beaa14ee748b5f54957c9829772a3010f5dd94ebc54f43c62142c874",
+  "src/prfaas/analytics.py": "996db12677eca0df2c5c885593244c69b4442c71353af162259e660ecb9dec1d",
+  "src/prfaas/cache.py": "55254084b54730ec5b8316928c5f3128b9946c6e857e43566d965e26ea6a607c",
+  "src/prfaas/demo.py": "41e828dad0ce305738b73f116261c9ad25d20ba4e51767655ca46f9086e5699a",
+  "src/prfaas/scheduler.py": "550aa22532d48b594608c122ad2c12af7fba5aac7a559d3a3b7291f9856a93e8",
+  "src/prfaas/tiny_model.py": "f1ca1d1c0dbbb06ca28a5cc63ee1d93391f350f323e243a0c236b791e5404104",
+  "src/prfaas/transport.py": "da7f1fed25eda904b9eab00fce83fbd8af0c734d1b651662003bd942916362bd",
+  "tests/test_analytics.py": "37eb4e265dba42ef9f460345e54e0c48736e87b4d3d033458cbdb2e34cdb2a46",
+  "tests/test_control.py": "804f4f38ab2ff1940046ac8d691ef13e70bd60c0401fab4f4975337373e24e86",
+  "tests/test_demo.py": "64541a022cfa88e656d07ea213468961b9ba91a11727fd97a3fa00ad4de991ca",
+  "tests/test_experiment.py": "75499db3365a29d665f90d21f04b5b459d97a161f7d5c1bd5395043db742400c",
+  "tests/test_tiny_model.py": "9ddcb0a1dfc1cd95b038844cfe7fd8fc91a9d862372e9edd2e3ff984df5d87fa",
+  "tests/test_transport.py": "a5d78f02e3e463f635adbc8a65fe43c6ee5b19b85a4a00fd5a229a414efcab5d"
+}
