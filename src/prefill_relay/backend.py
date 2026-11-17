@@ -5,7 +5,7 @@ from .tiny_model import TinyHybrid, encode_state, decode_state, delta, merge
 
 class TinyBackend:
     def __init__(self, device='cpu'):
-        self.model=TinyHybrid().to(device).eval(); self.device=torch.device(device)
+        self.model=TinyHybrid().to(device).eval(); self.device=next(self.model.parameters()).device
         self.vocab_size=self.model.vocab_size; self.layers=4; self.sequence_axis=0
         self.model_id='tiny-hybrid'; self.revision='seed0-width32'
 
