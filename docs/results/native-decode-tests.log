@@ -1,0 +1,14 @@
+test_invalid_count_context_identity_and_logits (test_hf_decode.NativeDecodeTests) ... ok
+test_model_must_return_valid_logits_and_native_cache (test_hf_decode.NativeDecodeTests) ... ok
+test_one_token_uses_cached_logits_without_model_call (test_hf_decode.NativeDecodeTests) ... ok
+test_single_restore_reused_cache_and_immutable_checkpoint (test_hf_decode.NativeDecodeTests) ... ok
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+<user-home>/prefill-relay-backend/.venv/lib/python3.10/site-packages/fla/ops/nsa/parallel.py:20: ImportWarning: Flash Attention is not installed. Please install it via `pip install flash-attn --no-build-isolation`
+  warnings.warn(
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3440.94it/s]
+test_trained_tokens_every_step_logits_and_checkpoint_match (test_hf_decode.TrainedNativeDecodeTests) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 20.634s
+
+OK

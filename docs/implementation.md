@@ -17,16 +17,16 @@ uv run --locked --extra trained prefill-relay profile \
 
 Each shape receives an untimed prefill warmup. Current profiles restore a native decode cache once per continuation and average up to eight decode steps per timing sample; earlier profiles measured individual restored-cache steps. Output includes all timing samples, medians, raw attention-state bytes, peak device allocation, model revision and environment. `kv_bytes` excludes token IDs, cached logits, serialization headers and transport overhead. The dense-cache comparison is a configuration-based byte estimate; it does not run a dense model or establish timing or quality equivalence.
 
-The checked-in [single-request profile](results/pretrained-profile.json) contains these observed medians:
+The [final single-request profile](results/h100-profile-final.json), using the optional CUDA convolution, contains these observed medians:
 
 | Input tokens | Prefill seconds | Raw attention state, MiB |
 |---:|---:|---:|
-| 1024 | 0.04384 | 30.84375 |
-| 8192 | 0.12767 | 114.84375 |
-| 32768 | 0.81117 | 402.84375 |
-| 131072 | 9.08846 | 1554.84375 |
+| 1024 | 0.04227 | 30.84375 |
+| 8192 | 0.11067 | 114.84375 |
+| 32768 | 0.76389 | 402.84375 |
+| 131072 | 8.91948 | 1554.84375 |
 
-Those timings come from one H100 PCIe running the pretrained 0.8B model. They are not service TTFT. [Separate batch measurements](results/pretrained-batches.json) cover batches of 2 and 4 at lengths 1, 64, 1024 and 8192. A batch-only file has no batch-1 interpolation profile and cannot be supplied directly to the runtime controller.
+Those timings come from one H100 PCIe running the pretrained 0.8B model. To reproduce this configuration, add `--extra cuda-kernels` to the commands above after following [the CUDA build instructions](cuda-kernels.md). They are not service TTFT. [Separate batch measurements](results/pretrained-batches.json) cover batches of 2 and 4 at lengths 1, 64, 1024 and 8192. A batch-only file has no batch-1 interpolation profile and cannot be supplied directly to the runtime controller.
 
 ## Run serving workloads
 
@@ -58,9 +58,12 @@ The workload runner schedules arrivals independently of completion and bounds th
 
 - Throughput is completed requests divided by the interval from the first scheduled arrival to final completion.
 - Mean/P90 TTFT includes dispatch delay and executor waiting, then coordinator-observed first-token readiness.
+- `transferred_bytes` counts cross-cluster state and migration bytes. Local prefill-to-decode TCP traffic is retained in sender statistics but excluded from this cross-cluster metric.
 - Output throughput counts all generated tokens. Per-request decode speed uses `(output_tokens - 1) / decode_s`, excluding the first token produced by prefill.
 - The trained decoder restores the native model cache once per continuation, preserving the stored checkpoint. Runtime `decode_s` includes batch coalescing and compute-lock waiting as well as synchronized decode compute. Batch size and batch queue time are retained separately.
 - SLO goodput counts completed requests meeting the decode speed threshold and optional TTFT threshold. The runner defaults to 40 decode tokens/s; a one-token output has no decode interval.
+
+The `pipelined` field reports observed overlap between transmission and prefill. Very short prefills may finish before the sender thread is scheduled; this does not prevent layer streaming.
 
 JSON artifacts include configuration, model revision, worker process IDs, per-request placement and transfer data, cache/role statistics, and an input fingerprint. Compare raw artifacts before drawing performance conclusions: logical clusters contend for the same GPU, and loopback application pacing does not reproduce separate machines or network paths.
 
@@ -91,3 +94,5 @@ PREFILL_RELAY_TRAINED_MODEL=Qwen/Qwen3.5-0.8B PREFILL_RELAY_TEST_DEVICE=cuda \
 Opt-in trained tests load the named model from its current default revision; use the pinned `profile --validate` command when reproducing a specific checkpoint. Existing receipts in `docs/results` identify the commands and source hashes for their own runs. Earlier tiny-backend receipts do not certify subsequently added service code.
 
 [Initial pretrained validation](results/pretrained-initial.json) found exact transported tensors, exact decode logits after handoff, exact reconstruction of producer state from a delta, and zero model calls on a complete prompt hit. Prefix recomputation in bf16 had maximum logit difference 0.15625 while preserving the tested next token. That observation is case-specific; it does not guarantee identical tokens for arbitrary inputs or floating-point execution shapes.
+
+[Final validation](validation.md) links the complete source-bound GPU run, subsequent compatibility checks, real migration and arrival-workload results.

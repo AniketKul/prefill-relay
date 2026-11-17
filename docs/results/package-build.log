@@ -1,0 +1,190 @@
+Building source distribution...
+running egg_info
+writing src/prefill_relay.egg-info/PKG-INFO
+writing dependency_links to src/prefill_relay.egg-info/dependency_links.txt
+writing entry points to src/prefill_relay.egg-info/entry_points.txt
+writing requirements to src/prefill_relay.egg-info/requires.txt
+writing top-level names to src/prefill_relay.egg-info/top_level.txt
+reading manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+writing manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+running sdist
+running egg_info
+writing src/prefill_relay.egg-info/PKG-INFO
+writing dependency_links to src/prefill_relay.egg-info/dependency_links.txt
+writing entry points to src/prefill_relay.egg-info/entry_points.txt
+writing requirements to src/prefill_relay.egg-info/requires.txt
+writing top-level names to src/prefill_relay.egg-info/top_level.txt
+reading manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+writing manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+running check
+creating prefill_relay-0.1.0
+creating prefill_relay-0.1.0/src/prefill_relay
+creating prefill_relay-0.1.0/src/prefill_relay.egg-info
+creating prefill_relay-0.1.0/tests
+copying files to prefill_relay-0.1.0...
+copying README.md -> prefill_relay-0.1.0
+copying pyproject.toml -> prefill_relay-0.1.0
+copying src/prefill_relay/__init__.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/__main__.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/analytics.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/backend.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/batch_decode.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/bench.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/cache.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/cache_service.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/demo.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/directory.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/empirical.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/hf_backend.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/hf_decode.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/hf_profile.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/hf_state.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/hf_validate.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/rate_limit.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/runtime.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/scheduler.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/storage.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/telemetry.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/tiny_model.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/transport.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/worker.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay/workload.py -> prefill_relay-0.1.0/src/prefill_relay
+copying src/prefill_relay.egg-info/PKG-INFO -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying src/prefill_relay.egg-info/SOURCES.txt -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying src/prefill_relay.egg-info/dependency_links.txt -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying src/prefill_relay.egg-info/entry_points.txt -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying src/prefill_relay.egg-info/requires.txt -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying src/prefill_relay.egg-info/top_level.txt -> prefill_relay-0.1.0/src/prefill_relay.egg-info
+copying tests/test_analytics.py -> prefill_relay-0.1.0/tests
+copying tests/test_batch_decode.py -> prefill_relay-0.1.0/tests
+copying tests/test_cache_service.py -> prefill_relay-0.1.0/tests
+copying tests/test_control.py -> prefill_relay-0.1.0/tests
+copying tests/test_demo.py -> prefill_relay-0.1.0/tests
+copying tests/test_experiment.py -> prefill_relay-0.1.0/tests
+copying tests/test_hf_backend.py -> prefill_relay-0.1.0/tests
+copying tests/test_hf_decode.py -> prefill_relay-0.1.0/tests
+copying tests/test_hf_state.py -> prefill_relay-0.1.0/tests
+copying tests/test_rate_limit.py -> prefill_relay-0.1.0/tests
+copying tests/test_runtime.py -> prefill_relay-0.1.0/tests
+copying tests/test_storage.py -> prefill_relay-0.1.0/tests
+copying tests/test_telemetry.py -> prefill_relay-0.1.0/tests
+copying tests/test_tiny_model.py -> prefill_relay-0.1.0/tests
+copying tests/test_transport.py -> prefill_relay-0.1.0/tests
+copying tests/test_workload.py -> prefill_relay-0.1.0/tests
+Writing prefill_relay-0.1.0/setup.cfg
+Creating tar archive
+removing 'prefill_relay-0.1.0' (and everything under it)
+Building wheel from source distribution...
+running egg_info
+writing src/prefill_relay.egg-info/PKG-INFO
+writing dependency_links to src/prefill_relay.egg-info/dependency_links.txt
+writing entry points to src/prefill_relay.egg-info/entry_points.txt
+writing requirements to src/prefill_relay.egg-info/requires.txt
+writing top-level names to src/prefill_relay.egg-info/top_level.txt
+reading manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+writing manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+running bdist_wheel
+running build
+running build_py
+creating build/lib/prefill_relay
+copying src/prefill_relay/hf_profile.py -> build/lib/prefill_relay
+copying src/prefill_relay/worker.py -> build/lib/prefill_relay
+copying src/prefill_relay/backend.py -> build/lib/prefill_relay
+copying src/prefill_relay/tiny_model.py -> build/lib/prefill_relay
+copying src/prefill_relay/hf_state.py -> build/lib/prefill_relay
+copying src/prefill_relay/transport.py -> build/lib/prefill_relay
+copying src/prefill_relay/hf_validate.py -> build/lib/prefill_relay
+copying src/prefill_relay/hf_decode.py -> build/lib/prefill_relay
+copying src/prefill_relay/cache.py -> build/lib/prefill_relay
+copying src/prefill_relay/__init__.py -> build/lib/prefill_relay
+copying src/prefill_relay/telemetry.py -> build/lib/prefill_relay
+copying src/prefill_relay/hf_backend.py -> build/lib/prefill_relay
+copying src/prefill_relay/workload.py -> build/lib/prefill_relay
+copying src/prefill_relay/runtime.py -> build/lib/prefill_relay
+copying src/prefill_relay/bench.py -> build/lib/prefill_relay
+copying src/prefill_relay/storage.py -> build/lib/prefill_relay
+copying src/prefill_relay/rate_limit.py -> build/lib/prefill_relay
+copying src/prefill_relay/batch_decode.py -> build/lib/prefill_relay
+copying src/prefill_relay/scheduler.py -> build/lib/prefill_relay
+copying src/prefill_relay/analytics.py -> build/lib/prefill_relay
+copying src/prefill_relay/cache_service.py -> build/lib/prefill_relay
+copying src/prefill_relay/directory.py -> build/lib/prefill_relay
+copying src/prefill_relay/demo.py -> build/lib/prefill_relay
+copying src/prefill_relay/empirical.py -> build/lib/prefill_relay
+copying src/prefill_relay/__main__.py -> build/lib/prefill_relay
+running egg_info
+writing src/prefill_relay.egg-info/PKG-INFO
+writing dependency_links to src/prefill_relay.egg-info/dependency_links.txt
+writing entry points to src/prefill_relay.egg-info/entry_points.txt
+writing requirements to src/prefill_relay.egg-info/requires.txt
+writing top-level names to src/prefill_relay.egg-info/top_level.txt
+reading manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+writing manifest file 'src/prefill_relay.egg-info/SOURCES.txt'
+installing to build/bdist.macosx-11.0-arm64/wheel
+running install
+running install_lib
+creating build/bdist.macosx-11.0-arm64/wheel
+creating build/bdist.macosx-11.0-arm64/wheel/prefill_relay
+copying build/lib/prefill_relay/hf_profile.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/worker.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/backend.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/tiny_model.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/hf_state.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/transport.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/hf_validate.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/hf_decode.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/cache.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/telemetry.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/hf_backend.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/workload.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/runtime.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/bench.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/storage.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/rate_limit.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/batch_decode.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/scheduler.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/analytics.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/cache_service.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/directory.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/demo.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/empirical.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+copying build/lib/prefill_relay/__main__.py -> build/bdist.macosx-11.0-arm64/wheel/./prefill_relay
+running install_egg_info
+Copying src/prefill_relay.egg-info to build/bdist.macosx-11.0-arm64/wheel/./prefill_relay-0.1.0-py3.10.egg-info
+running install_scripts
+creating build/bdist.macosx-11.0-arm64/wheel/prefill_relay-0.1.0.dist-info/WHEEL
+creating '<user-home>/prefill-relay/dist/.tmp-7x5uv8mt/prefill_relay-0.1.0-py3-none-any.whl' and adding 'build/bdist.macosx-11.0-arm64/wheel' to it
+adding 'prefill_relay/__init__.py'
+adding 'prefill_relay/__main__.py'
+adding 'prefill_relay/analytics.py'
+adding 'prefill_relay/backend.py'
+adding 'prefill_relay/batch_decode.py'
+adding 'prefill_relay/bench.py'
+adding 'prefill_relay/cache.py'
+adding 'prefill_relay/cache_service.py'
+adding 'prefill_relay/demo.py'
+adding 'prefill_relay/directory.py'
+adding 'prefill_relay/empirical.py'
+adding 'prefill_relay/hf_backend.py'
+adding 'prefill_relay/hf_decode.py'
+adding 'prefill_relay/hf_profile.py'
+adding 'prefill_relay/hf_state.py'
+adding 'prefill_relay/hf_validate.py'
+adding 'prefill_relay/rate_limit.py'
+adding 'prefill_relay/runtime.py'
+adding 'prefill_relay/scheduler.py'
+adding 'prefill_relay/storage.py'
+adding 'prefill_relay/telemetry.py'
+adding 'prefill_relay/tiny_model.py'
+adding 'prefill_relay/transport.py'
+adding 'prefill_relay/worker.py'
+adding 'prefill_relay/workload.py'
+adding 'prefill_relay-0.1.0.dist-info/METADATA'
+adding 'prefill_relay-0.1.0.dist-info/WHEEL'
+adding 'prefill_relay-0.1.0.dist-info/entry_points.txt'
+adding 'prefill_relay-0.1.0.dist-info/top_level.txt'
+adding 'prefill_relay-0.1.0.dist-info/RECORD'
+removing build/bdist.macosx-11.0-arm64/wheel
+Successfully built dist/prefill_relay-0.1.0.tar.gz
+Successfully built dist/prefill_relay-0.1.0-py3-none-any.whl

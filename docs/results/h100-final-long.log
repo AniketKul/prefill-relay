@@ -1,0 +1,10 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  91%|█████████▏| 292/320 [00:00<00:00, 2915.92it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3018.81it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 4693.01it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3228.96it/s]
+{"completed_context": 8192, "ttft_s": 16.682125337421894, "bytes": 122506228}
+{"completed_context": 32768, "ttft_s": 14.094585034996271, "bytes": 429214780}
+{"completed_context": 131072, "ttft_s": 57.736880380660295, "bytes": 1656048772}
+{"output": "docs/results/h100-long-final.json", "scenario": "long", "completed": true, "passed": true}

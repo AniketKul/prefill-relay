@@ -1,0 +1,359 @@
+{
+  "kind": "measured independent processes on one shared host/device; application-rate emulation",
+  "workers": {
+    "remote-0": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 2969531,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      }
+    },
+    "local-0": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 2970169,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      }
+    },
+    "local-1": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 2970867,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      }
+    }
+  },
+  "configuration": {
+    "backend": "hf",
+    "device": "cuda",
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "profile": null,
+    "output": "docs/results/h100-migration.json",
+    "scenario": "migration",
+    "lengths": [
+      16384
+    ],
+    "requests": 12,
+    "output_tokens": 4,
+    "rate": 2,
+    "bandwidth_mib": 1000.0,
+    "cache_gib": 4,
+    "block_tokens": 256,
+    "warm_rounds": 0,
+    "remote_workers": 1,
+    "batch_wait_s": 0.005
+  },
+  "migration": {
+    "initial": {
+      "source": [
+        "remote",
+        "remote-0"
+      ],
+      "target": [
+        "local",
+        "local-1"
+      ],
+      "length": 8192,
+      "bytes_transferred": 161383326,
+      "status": "transferred"
+    },
+    "delta": {
+      "source": [
+        "remote",
+        "remote-0"
+      ],
+      "target": [
+        "local",
+        "local-1"
+      ],
+      "length": 16384,
+      "bytes_transferred": 161472631,
+      "status": "transferred"
+    },
+    "cold": {
+      "source": [
+        "remote",
+        "remote-0"
+      ],
+      "target": [
+        "local",
+        "local-1"
+      ],
+      "length": 16384,
+      "bytes_transferred": 295754359,
+      "status": "transferred"
+    },
+    "stats": {
+      "workers": {
+        "remote-0": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 256,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 59862,
+          "prefix_blocks": 59862,
+          "transfer_blocks": 0,
+          "ram_bytes": 66878770,
+          "ram_limit": 67108864,
+          "ram_hits": 70,
+          "ssd_reads": 2238,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 2,
+          "ssd_payload_bytes": 242137760
+        },
+        "local-0": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 256,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 59862,
+          "prefix_blocks": 59862,
+          "transfer_blocks": 0,
+          "ram_bytes": 67074207,
+          "ram_limit": 67108864,
+          "ram_hits": 45,
+          "ssd_reads": 340,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 2,
+          "ssd_payload_bytes": 242137760
+        },
+        "local-1": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 256,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 54899,
+          "prefix_blocks": 54899,
+          "transfer_blocks": 0,
+          "ram_bytes": 66091951,
+          "ram_limit": 67108864,
+          "ram_hits": 95,
+          "ssd_reads": 2213,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 1,
+          "ssd_payload_bytes": 221813201
+        }
+      },
+      "roles": {
+        "local-0": "decode",
+        "local-1": "decode"
+      },
+      "role_history": [
+        {
+          "node": "local-0",
+          "role": "decode",
+          "at": 24456555.571241084
+        }
+      ],
+      "telemetry": {
+        "bandwidth_bytes_s": 1048576000.0,
+        "utilization": 0.016745765841092858,
+        "queue_depth": 0,
+        "goodput_bytes_s": 17559208.162589785,
+        "failures": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0
+      },
+      "rate": {
+        "bytes": 863622772,
+        "reservations": 99,
+        "rejected": 0,
+        "bandwidth_bytes_s": 1048576000.0,
+        "pending_reservations": 0,
+        "queued_seconds": 0.0
+      },
+      "outstanding_requests": 0,
+      "migrations": [
+        {
+          "source": [
+            "remote",
+            "remote-0"
+          ],
+          "target": [
+            "local",
+            "local-1"
+          ],
+          "length": 8192,
+          "bytes_transferred": 161383326,
+          "status": "transferred"
+        },
+        {
+          "source": [
+            "remote",
+            "remote-0"
+          ],
+          "target": [
+            "local",
+            "local-1"
+          ],
+          "length": 16384,
+          "bytes_transferred": 161472631,
+          "status": "transferred"
+        },
+        {
+          "source": [
+            "remote",
+            "remote-0"
+          ],
+          "target": [
+            "local",
+            "local-1"
+          ],
+          "length": 16384,
+          "bytes_transferred": 295754359,
+          "status": "transferred"
+        }
+      ]
+    }
+  },
+  "final_stats": {
+    "workers": {
+      "remote-0": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 256,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 59862,
+        "prefix_blocks": 59862,
+        "transfer_blocks": 0,
+        "ram_bytes": 66878770,
+        "ram_limit": 67108864,
+        "ram_hits": 70,
+        "ssd_reads": 2238,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 2,
+        "ssd_payload_bytes": 242137760
+      },
+      "local-0": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 256,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 59862,
+        "prefix_blocks": 59862,
+        "transfer_blocks": 0,
+        "ram_bytes": 67074207,
+        "ram_limit": 67108864,
+        "ram_hits": 45,
+        "ssd_reads": 340,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 2,
+        "ssd_payload_bytes": 242137760
+      },
+      "local-1": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 256,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 54899,
+        "prefix_blocks": 54899,
+        "transfer_blocks": 0,
+        "ram_bytes": 66091951,
+        "ram_limit": 67108864,
+        "ram_hits": 95,
+        "ssd_reads": 2213,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 1,
+        "ssd_payload_bytes": 221813201
+      }
+    },
+    "roles": {
+      "local-0": "decode",
+      "local-1": "decode"
+    },
+    "role_history": [
+      {
+        "node": "local-0",
+        "role": "decode",
+        "at": 24456555.571241084
+      }
+    ],
+    "telemetry": {
+      "bandwidth_bytes_s": 1048576000.0,
+      "utilization": 0.016745765841092858,
+      "queue_depth": 0,
+      "goodput_bytes_s": 17559208.162589785,
+      "failures": 0,
+      "retransmissions": 0,
+      "rtt_ms": 0
+    },
+    "rate": {
+      "bytes": 863622772,
+      "reservations": 99,
+      "rejected": 0,
+      "bandwidth_bytes_s": 1048576000.0,
+      "pending_reservations": 0,
+      "queued_seconds": 0.0
+    },
+    "outstanding_requests": 0,
+    "migrations": [
+      {
+        "source": [
+          "remote",
+          "remote-0"
+        ],
+        "target": [
+          "local",
+          "local-1"
+        ],
+        "length": 8192,
+        "bytes_transferred": 161383326,
+        "status": "transferred"
+      },
+      {
+        "source": [
+          "remote",
+          "remote-0"
+        ],
+        "target": [
+          "local",
+          "local-1"
+        ],
+        "length": 16384,
+        "bytes_transferred": 161472631,
+        "status": "transferred"
+      },
+      {
+        "source": [
+          "remote",
+          "remote-0"
+        ],
+        "target": [
+          "local",
+          "local-1"
+        ],
+        "length": 16384,
+        "bytes_transferred": 295754359,
+        "status": "transferred"
+      }
+    ]
+  }
+}

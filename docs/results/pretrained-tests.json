@@ -1,0 +1,16 @@
+{
+  "command": "PREFILL_RELAY_TRAINED_MODEL=Qwen/Qwen3.5-0.8B PREFILL_RELAY_TEST_DEVICE=cuda PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -p \"test_hf*.py\" -v",
+  "executed_python": "isolated uv-managed Python3.10 environment",
+  "exit_code": 0,
+  "tests_passed": 7,
+  "model": "Qwen/Qwen3.5-0.8B",
+  "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "source_sha256": {
+    "src/prefill_relay/hf_backend.py": "80a286f49b33d7185c23c9846eb681beb9dbbbf3e66e9029a27c8ca6f9a52403",
+    "src/prefill_relay/hf_profile.py": "ff8c6a9f9ecf962029ae32bec5837fe242b43bf887343281662a795c23e43916",
+    "src/prefill_relay/hf_state.py": "bae34a8867202f96f401885d63fbf8759cd342d7313fe74353bfee37c30f9c2f",
+    "src/prefill_relay/hf_validate.py": "34647efa3549adf4d79cb806efb29f701022a5a8f216bbc830f2f588af3ab781",
+    "tests/test_hf_backend.py": "7ea86a54908594b148d3d9297bd177e3f6a796da5d1d3e465dd1ad13e30ad3d0",
+    "tests/test_hf_state.py": "e7fc96a669d78bf2cbf902588f94e28f49815a7064940d186701201fd0b2642d"
+  }
+}

@@ -1,0 +1,6 @@
+warning: The `extra-build-dependencies` option is experimental and may change without warning. Pass `--preview-features extra-build-dependencies` to disable this warning.
+Installed 1 package in 12ms
+----------------------------------------------------------------------
+Ran 90 tests in 4.296s
+
+OK (skipped=30)

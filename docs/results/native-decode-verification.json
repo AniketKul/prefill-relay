@@ -1,0 +1,19 @@
+{
+  "command": "PREFILL_RELAY_TRAINED_MODEL=Qwen/Qwen3.5-0.8B PREFILL_RELAY_TEST_DEVICE=cuda PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -p test_hf_decode.py -v",
+  "tests_passed": 5,
+  "elapsed_seconds": 20.634,
+  "batch_sizes": [
+    1,
+    2,
+    4
+  ],
+  "distinct_prompts_per_batch": true,
+  "all_step_logits_bitwise_equal": true,
+  "generated_tokens_equal": true,
+  "checkpoint_unchanged": true,
+  "restore_calls_per_sequence": 1,
+  "source_sha256": {
+    "src/prefill_relay/hf_decode.py": "1a01c8cbe2f06b454787338a7e0dd05c7fb27f3c4887562392c7cdb519f97e9d",
+    "tests/test_hf_decode.py": "f302edbafdc55048af399d647d8dc5827445abeffee01c10e9ff7fde0d6ab1c1"
+  }
+}

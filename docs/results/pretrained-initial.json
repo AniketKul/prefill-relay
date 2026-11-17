@@ -1,0 +1,119 @@
+{
+  "validation": {
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "torch.bfloat16",
+    "device": "cuda:0",
+    "prompt_tokens": 12,
+    "decode_tokens": [
+      25358,
+      13,
+      561,
+      6511,
+      314,
+      279,
+      3516,
+      4042
+    ],
+    "completion": " Tokyo. The capital of the United States",
+    "layers_streamed": 24,
+    "first_layer_ready_seconds": 11.331735398620367,
+    "last_layer_ready_seconds": 11.48677796497941,
+    "handoff_max_logit_error": 0.0,
+    "prefix_max_logit_error": 0.15625,
+    "prefix_next_token_equal": true,
+    "full_hit_model_calls": 0,
+    "batch_size_validated": 2,
+    "wire_state_equal": true,
+    "delta_state_equal": true,
+    "cache_bytes": 19906560,
+    "unequal_prefix_missing_tokens": 9
+  },
+  "measurements": {
+    "kind": "measured pretrained inference on one device",
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "torch.bfloat16",
+    "torch": "2.6.0+cu124",
+    "python": "3.10.12",
+    "device": "NVIDIA H100 PCIe",
+    "chunk_size": 4096,
+    "rows": [
+      {
+        "length": 1024,
+        "batch": 1,
+        "seconds": 0.042591676115989685,
+        "samples_seconds": [
+          0.0431067980825901,
+          0.04207655414938927
+        ],
+        "decode_step_seconds": 0.027405284345149994,
+        "decode_samples_seconds": [
+          0.027614109218120575,
+          0.027196459472179413
+        ],
+        "kv_bytes": 32342016,
+        "full_attention_bytes": 12582912,
+        "linear_state_bytes": 19759104,
+        "dense_cache_estimate_bytes": 50331648,
+        "peak_gpu_bytes": 1716279296
+      },
+      {
+        "length": 8192,
+        "batch": 1,
+        "seconds": 0.12808967009186745,
+        "samples_seconds": [
+          0.12814218923449516,
+          0.12803715094923973
+        ],
+        "decode_step_seconds": 0.027636010199785233,
+        "decode_samples_seconds": [
+          0.02746102213859558,
+          0.027810998260974884
+        ],
+        "kv_bytes": 120422400,
+        "full_attention_bytes": 100663296,
+        "linear_state_bytes": 19759104,
+        "dense_cache_estimate_bytes": 402653184,
+        "peak_gpu_bytes": 2192364544
+      },
+      {
+        "length": 32768,
+        "batch": 1,
+        "seconds": 0.8151117134839296,
+        "samples_seconds": [
+          0.8181292749941349,
+          0.8120941519737244
+        ],
+        "decode_step_seconds": 0.02899426966905594,
+        "decode_samples_seconds": [
+          0.02925480529665947,
+          0.028733734041452408
+        ],
+        "kv_bytes": 422412288,
+        "full_attention_bytes": 402653184,
+        "linear_state_bytes": 19759104,
+        "dense_cache_estimate_bytes": 1610612736,
+        "peak_gpu_bytes": 3565159424
+      }
+    ],
+    "profile": {
+      "lengths": [
+        1024,
+        8192,
+        32768
+      ],
+      "seconds": [
+        0.042591676115989685,
+        0.12808967009186745,
+        0.8151117134839296
+      ],
+      "kv_bytes": [
+        32342016,
+        120422400,
+        422412288
+      ]
+    },
+    "dense_comparison": "configuration byte estimate only; no dense-model timing or quality measurement"
+  }
+}

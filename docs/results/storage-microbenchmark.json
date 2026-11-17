@@ -1,0 +1,29 @@
+{
+  "kind": "synthetic SSD cache microbenchmark; identical payloads and durability; not inference throughput",
+  "platform": "macOS-26.7.1-arm64-arm-64bit",
+  "python": "3.10.19",
+  "sqlite": "3.50.4",
+  "checkpoint_bytes": 20971520,
+  "checkpoints": 5,
+  "repeats": 3,
+  "rows": {
+    "baseline": {
+      "samples_s": [
+        1.4407592499628663,
+        1.4831359591335058,
+        1.4095815839245915
+      ],
+      "median_s": 1.4407592499628663,
+      "source_sha256": "7a2e416efda747b37496ff83b5a60a7b50eb1a3706ac2b07153c5b0d0ec046e5"
+    },
+    "packed": {
+      "samples_s": [
+        0.46064133383333683,
+        0.46984020806849003,
+        0.46827316586859524
+      ],
+      "median_s": 0.46827316586859524,
+      "source_sha256": "24137e7590cc2f2ebcbc7aec0c43077e4706ea7011b51fa676b6d36efc33cc53"
+    }
+  }
+}

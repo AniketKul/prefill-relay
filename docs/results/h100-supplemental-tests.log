@@ -1,0 +1,100 @@
+test_equations_and_aggregate_bandwidth (test_analytics.AnalyticsTests) ... ok
+test_invalid_values_rejected (test_analytics.AnalyticsTests) ... ok
+test_search_is_global_best_on_supplied_grid (test_analytics.AnalyticsTests) ... ok
+test_truncated_distribution (test_analytics.AnalyticsTests) ... ok
+test_unused_stages_do_not_limit_capacity (test_analytics.AnalyticsTests) ... ok
+test_batch_failure_propagates_and_worker_recovers (test_batch_decode.BatchDecodeTests) ... ok
+test_bounded_queue_and_close_drain (test_batch_decode.BatchDecodeTests) ... ok
+test_compatible_requests_use_real_batch_shape (test_batch_decode.BatchDecodeTests) ... ok
+test_lengths_and_identity_do_not_mix (test_batch_decode.BatchDecodeTests) ... ok
+test_tiny_backend_falls_back_to_single_requests (test_batch_decode.BatchDecodeTests) ... ok
+test_abrupt_process_exit_recovers_committed_data_and_releases_orphan_pins (test_cache_service.CacheServiceTests) ... ok
+test_delta_migration_16_to_32_sends_missing_blocks_and_rates_only_cross_cluster (test_cache_service.CacheServiceTests) ... ok
+test_listener_requires_authentication_off_loopback (test_cache_service.CacheServiceTests) ... ok
+test_live_directory_placement_migration_and_same_cluster_rebalance (test_cache_service.CacheServiceTests) ... ok
+test_partial_block_hash_mismatch_sends_new_bytes_and_bad_hashes_are_rejected (test_cache_service.CacheServiceTests) ... ok
+test_rate_limiter_failure_releases_local_staging_before_error_response (test_cache_service.CacheServiceTests) ... ok
+test_real_process_auth_namespace_bounds_and_roundtrip (test_cache_service.CacheServiceTests) ... ok
+test_receiver_capacity_failure_releases_sender_pins (test_cache_service.CacheServiceTests) ... ok
+test_cache_requires_exact_recurrent_checkpoint (test_control.ControlTests) ... ok
+test_controller_short_and_long_timescales (test_control.ControlTests) ... ok
+test_lru_and_namespace (test_control.ControlTests) ... ok
+test_outage_reallocates_zero_prefill_immediately (test_control.ControlTests) ... ok
+test_pinned_transfer_shared_capacity_and_cleanup (test_control.ControlTests) ... ok
+test_routing_bandwidth_and_cache_branches (test_control.ControlTests) ... ok
+test_end_to_end_paths (test_demo.DemoTests) ... ok
+test_example_search_includes_baselines (test_experiment.ExperimentTests) ... ok
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+<user-home>/prefill-relay/.venv/lib/python3.10/site-packages/fla/ops/nsa/parallel.py:20: ImportWarning: Flash Attention is not installed. Please install it via `pip install flash-attn --no-build-isolation`
+  warnings.warn(
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 4253.09it/s]
+test_invalid_inputs_and_foreign_state (test_hf_backend.TrainedBackendTests) ... ok
+test_trained_layer_stream_delta_prefix_full_hit_and_batched_handoff (test_hf_backend.TrainedBackendTests) ... ok
+test_invalid_count_context_identity_and_logits (test_hf_decode.NativeDecodeTests) ... ok
+test_model_must_return_valid_logits_and_native_cache (test_hf_decode.NativeDecodeTests) ... ok
+test_one_token_uses_cached_logits_without_model_call (test_hf_decode.NativeDecodeTests) ... ok
+test_single_restore_reused_cache_and_immutable_checkpoint (test_hf_decode.NativeDecodeTests) ... ok
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3232.88it/s]
+test_trained_tokens_every_step_logits_and_checkpoint_match (test_hf_decode.TrainedNativeDecodeTests) ... ok
+test_batched_delta_slices_all_attention_but_replaces_linear (test_hf_state.TrainedStateTests) ... ok
+test_checksum_and_byte_limit (test_hf_state.TrainedStateTests) ... ok
+test_codec_preserves_bf16_fp16_float32_and_zero_dimensions (test_hf_state.TrainedStateTests) ... ok
+test_empty_destination_and_full_hit (test_hf_state.TrainedStateTests) ... ok
+test_wrong_prefix_and_wrong_model_are_rejected (test_hf_state.TrainedStateTests) ... ok
+test_auth_and_input_bounds (test_rate_limit.RateLimitTests) ... ok
+test_bandwidth_change_keeps_existing_reservations (test_rate_limit.RateLimitTests) ... ok
+test_independent_producers_share_aggregate_clock (test_rate_limit.RateLimitTests) ... ok
+test_pending_queue_is_bounded_and_drains (test_rate_limit.RateLimitTests) ... ok
+test_waiting_clients_do_not_hold_server_lock (test_rate_limit.RateLimitTests) ... ok
+test_zero_bandwidth_fails_quickly_and_recovers (test_rate_limit.RateLimitTests) ... ok
+test_process_handoff_full_hit_migration_and_roles (test_runtime.RuntimeTests) ... ok
+test_profile_feedback_applies_outage_role_change (test_runtime.RuntimeTests) ... ok
+test_small_cache_admission_does_not_abort_generation (test_runtime.RuntimeTests) ... ok
+test_branch_checkpoints_keep_numeric_variants_and_dedupe_identical_blocks (test_storage.StorageTests) ... ok
+test_corruption_is_fail_closed_and_namespace_geometry_is_checked (test_storage.StorageTests) ... ok
+test_full_block_spans_multiple_units_and_shares_capacity_with_transfer (test_storage.StorageTests) ... ok
+test_full_capacity_cannot_evict_and_replace_a_conflicting_exact_checkpoint (test_storage.StorageTests) ... ok
+test_idempotent_schema_order_and_repair_of_corrupt_disk_bytes (test_storage.StorageTests) ... ok
+test_inventory_delete_and_idempotent_put (test_storage.StorageTests) ... ok
+test_large_shared_full_block_is_protected_by_units_during_eviction (test_storage.StorageTests) ... ok
+test_legacy_single_unit_block_schema_is_migrated_on_restart (test_storage.StorageTests) ... ok
+test_lru_eviction_and_put_failure_do_not_destroy_existing_entry (test_storage.StorageTests) ... ok
+test_partial_final_block_is_reusable_only_with_its_exact_checkpoint (test_storage.StorageTests) ... ok
+test_recomputed_recurrent_variant_after_checkpoint_eviction (test_storage.StorageTests) ... ok
+test_restart_aborts_orphaned_transfers_and_preserves_prefixes (test_storage.StorageTests) ... ok
+test_restart_recovers_exact_checkpoints_and_shared_blocks (test_storage.StorageTests) ... ok
+test_second_writer_is_rejected (test_storage.StorageTests) ... ok
+test_transfer_pins_share_capacity_and_ack_controls_reclaim (test_storage.StorageTests) ... ok
+test_without_exact_recurrent_state_partial_prefix_is_not_reusable (test_storage.StorageTests) ... ok
+test_abort_rejects_inflight_late_commit (test_telemetry.TelemetryTests) ... ok
+test_chunked_transfer_and_feedback (test_telemetry.TelemetryTests) ... ok
+test_missing_chunks_rejected (test_telemetry.TelemetryTests) ... ok
+test_roles_drain_before_switch (test_telemetry.TelemetryTests) ... ok
+test_corrupt_or_truncated_serialization_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_decode_handoff_matches_every_next_token (test_tiny_model.TinyModelTests) ... ok
+test_delta_replaces_recurrent_state_and_sends_only_missing_kv (test_tiny_model.TinyModelTests) ... ok
+test_empty_base_delta (test_tiny_model.TinyModelTests) ... ok
+test_forged_dimensions_are_rejected_before_allocation (test_tiny_model.TinyModelTests) ... ok
+test_incremental_logits_match_full_recomputation (test_tiny_model.TinyModelTests) ... ok
+test_invalid_inputs_and_cache_are_rejected (test_tiny_model.TinyModelTests) ... ok
+test_layer_callback_is_complete_and_serializable (test_tiny_model.TinyModelTests) ... ok
+test_model_mismatch_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_checksum_and_truncation_release_capacity (test_transport.TransportTests) ... ok
+test_failed_send_releases_explicitly_aborted_transfer (test_transport.TransportTests) ... ok
+test_oversized_header_rejected (test_transport.TransportTests) ... ok
+test_parallel_streaming_ack_and_release (test_transport.TransportTests) ... ok
+test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests) ... ok
+test_receiver_bound_and_idempotent_retry (test_transport.TransportTests) ... ok
+test_reservation_commits_before_ack (test_transport.TransportTests) ... ok
+test_all_hits_and_outside_profile_are_explicit (test_workload.EmpiricalTests) ... ok
+test_cache_hits_are_separate_from_miss_distribution (test_workload.EmpiricalTests) ... ok
+test_arrivals_and_skew_are_deterministic (test_workload.WorkloadTests) ... ok
+test_bounded_overload_and_errors (test_workload.WorkloadTests) ... ok
+test_comparison_reuses_inputs_and_resets_warmup (test_workload.WorkloadTests) ... ok
+test_queue_time_is_part_of_ttft_and_goodput (test_workload.WorkloadTests) ... ok
+test_single_output_has_no_decode_interval (test_workload.WorkloadTests) ... ok
+
+----------------------------------------------------------------------
+Ran 90 tests in 55.175s
+
+OK

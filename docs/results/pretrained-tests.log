@@ -1,0 +1,18 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+<user-home>/prefill-relay-backend/.venv/lib/python3.10/site-packages/fla/ops/nsa/parallel.py:20: ImportWarning: Flash Attention is not installed. Please install it via `pip install flash-attn --no-build-isolation`
+  warnings.warn(
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3565.69it/s]
+test_invalid_inputs_and_foreign_state (test_hf_backend.TrainedBackendTests) ... [transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+ok
+test_trained_layer_stream_delta_prefix_full_hit_and_batched_handoff (test_hf_backend.TrainedBackendTests) ... [transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+ok
+test_batched_delta_slices_all_attention_but_replaces_linear (test_hf_state.TrainedStateTests) ... ok
+test_checksum_and_byte_limit (test_hf_state.TrainedStateTests) ... ok
+test_codec_preserves_bf16_fp16_float32_and_zero_dimensions (test_hf_state.TrainedStateTests) ... ok
+test_empty_destination_and_full_hit (test_hf_state.TrainedStateTests) ... ok
+test_wrong_prefix_and_wrong_model_are_rejected (test_hf_state.TrainedStateTests) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 21.277s
+
+OK

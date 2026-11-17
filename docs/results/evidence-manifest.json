@@ -1,0 +1,77 @@
+{
+  "tested_implementation_commit": "b6edc2d9045425ed1e8b7b23542f05fecb67fcfe",
+  "source_digest": "81c0ca9f847b48645ad235a50eea914fe633fbee60e5b54ec5a7126d1c45e677",
+  "normalization": {
+    "docs/results/package-build.log": {
+      "raw_sha256": "3df372bc99a05e65d8f9a8792b039d020d14525b5a07a4797e87a51352933fa9",
+      "published_sha256": "44e2c0b115b5e2c625176fce0446e14d5414a85ec7392fbe9db4a30253843929"
+    },
+    "docs/results/native-decode-tests.log": {
+      "raw_sha256": "50ee8232408b8928b6c579f7e0f7fc1013f9ac1cfd0b293d1e276a171820782b",
+      "published_sha256": "3ee645727a2317e2e6030a9bc41aa72f5ebe654cd95cf163b836cf99cba7619e"
+    },
+    "docs/results/pretrained-tests.log": {
+      "raw_sha256": "c9bcaa17214c1af68fcbdd40d856dd50e42c5f925c0006053024985bc6c511dc",
+      "published_sha256": "5620dee1f897e16fd0330ec3dcdcad807b5931189c5871c75c7d57ca17688eda"
+    },
+    "docs/results/h100-supplemental-tests.log": {
+      "raw_sha256": "de4f39a17c3da4dd3868552af6137e41e96011047a602e88bc0bf473f1f4af3a",
+      "published_sha256": "13da5ee59df923930c218ad34716e19733bc72465077ec1f34874e4056965ba4"
+    },
+    "docs/results/h100-final-tests.log": {
+      "raw_sha256": "79be65de38ee10699bb9dd5a9d9d179b7d7cd1b5be8c8efb1e4cdff0d9ddd2fc",
+      "published_sha256": "521f48525ea3d691d867cf6915ccc2a69d112928e17b585869c2ab031b8dff92"
+    },
+    "docs/results/local-complete-tests.log": {
+      "raw_sha256": "6561927794c7b5628f143939bb46a63cc41b9ebee9d56781b13fdd084044b014",
+      "published_sha256": "06638e1f1af26676d385cbbcc1927f1e112c904688921672de0a208bec05c28e"
+    }
+  },
+  "files": {
+    "docs/results/causal-conv-comparison.json": "86b396745adce8e9e5963c6c1eabaa74e285a1c8abab9521c95cbb5fbd6f4934",
+    "docs/results/causal-conv-interleaved.json": "40fb0a8c6b678e074754b8400557d9e4573f432ff9f0bd441320efa1ddba99e7",
+    "docs/results/cli-search.json": "a09af051e530e17f9bcffcfe58198fe4997ebf3aa94990ddf550d852cd1d5aa9",
+    "docs/results/complete-verification.json": "b8a75e389d308c457a59a5ebd61c746ad71342cfbc1324417481dacac4824978",
+    "docs/results/core-complete-tests.log": "5562a882029b9e82081d64d3a309348392c36fcf550ae7c4720db7a2757ae79c",
+    "docs/results/h100-demo.json": "8f97936f268489f4d9e05af71fdc5751a4de8a4f30ec9e67308eebfe93a1da64",
+    "docs/results/h100-final-long.log": "fd4e511893a577e545c6baf73a4f080b1ad4f07d9b8db3d71d0496de229ec1c8",
+    "docs/results/h100-final-migration.log": "62b95811c2fa2f588529e66f0177a5db5d0dd02a9f1d4cb4598844a9ac88ff45",
+    "docs/results/h100-final-profile.log": "2ff2cd01e084992a8f1c0f7398c0d4ba5d745f47246731bac1606eb20161ee75",
+    "docs/results/h100-final-service.log": "855e8119c1bb56c8cfba5f5629db9b7daadf29acaada6b4044c78caf6ddcc4ee",
+    "docs/results/h100-final-tests.log": "521f48525ea3d691d867cf6915ccc2a69d112928e17b585869c2ab031b8dff92",
+    "docs/results/h100-final-workloads.log": "03fb8465e2b63c84b6f4192fa7fed9be9077e551a2e1f341e044428eb75df916",
+    "docs/results/h100-long-final.json": "0de11bea3763cd45ee0851552f18e09e4ae6fd6dbc98f3e4cc9805c2f237c721",
+    "docs/results/h100-long-service.json": "dfc78e19a9b9f42398859cedcee7d6f2bff9afa15e22ac4a40fb3e9b268835ce",
+    "docs/results/h100-migration.json": "6058a7d1bc90fdc5ebb065d628287591b0b3898ad5551cc9318030b5d2fd1140",
+    "docs/results/h100-profile-final.json": "8d733c426206b5961c2e7b25722e8cdd7752193de17d2e4fe86896408df0715c",
+    "docs/results/h100-service-final.json": "a69cffbf83de7c5e63a760978eac95ed6adf5e0b436a54bafa721468cfd2c64e",
+    "docs/results/h100-service.json": "c12efdd8a2abf070c38cbdde04c2c9048055bd7bcd3f0c77c1e9e714c68c374a",
+    "docs/results/h100-supplemental-tests.log": "13da5ee59df923930c218ad34716e19733bc72465077ec1f34874e4056965ba4",
+    "docs/results/h100-supplemental-tiny-service.log": "df37c0846cf871c899e7440b3e9103507f8df18cc06edba1c12ee1fcf3b89c55",
+    "docs/results/h100-tests.txt": "621293d3deb6ea6e392e4fd2e9e0bcf54bddd13692523145ffc4bda5f726dee9",
+    "docs/results/h100-tiny-final.json": "c2cad1f90a453826dd36fe1f14586e7cc25466ff46794462a4dc8e894d77f187",
+    "docs/results/h100-workloads-baseline.json": "e625bdb550b8c3f442d698ad76a4e15bf375dc16f86d4e6ea98924c9d2d982a0",
+    "docs/results/h100-workloads-final.json": "e2390c667965937a3774a54682c817fb97dcd6ee7a9b66fcc3e7ca9c9d73424a",
+    "docs/results/illustrative/results.json": "a09af051e530e17f9bcffcfe58198fe4997ebf3aa94990ddf550d852cd1d5aa9",
+    "docs/results/illustrative/sweep.csv": "50816f1b40b29d500dc01b9fd3ee069478aad94456ecf5d6bf8eaf239551ac63",
+    "docs/results/illustrative/sweep.svg": "d1ee46b3cac1a5761a6aca8cd7b46972eae19a7dafef376533cd79ad06aa7b75",
+    "docs/results/local-complete-tests.log": "06638e1f1af26676d385cbbcc1927f1e112c904688921672de0a208bec05c28e",
+    "docs/results/local-tests.txt": "87fff68efe12a4a3ff069fad81b096b92728f2ccf84dc91369cefd051d3e2d21",
+    "docs/results/native-decode-benchmark.json": "3bd7770f1cfe765bd2af3de5d0bdc85946ea4b0e93f283e9026d3ca465810775",
+    "docs/results/native-decode-tests.log": "3ee645727a2317e2e6030a9bc41aa72f5ebe654cd95cf163b836cf99cba7619e",
+    "docs/results/native-decode-verification.json": "a5c3bb6fbaa1abbfd5beb017a7645b895f272a4b15b6e40263a9a787070bd4c9",
+    "docs/results/package-build.log": "44e2c0b115b5e2c625176fce0446e14d5414a85ec7392fbe9db4a30253843929",
+    "docs/results/package-verification.json": "05690357d719700d8a33940bd3d0127ec7ec1986fe481f5d63916f1dd32fbaaa",
+    "docs/results/pretrained-batches.json": "f1a6fa38d4a9fce11c13d781358fad049753ec4c4fad5da4d4d3d1578c02207b",
+    "docs/results/pretrained-initial.json": "b1c91066ca63bb35137c581b66b55beceec31a5659a0b9f62843a8be699b5208",
+    "docs/results/pretrained-profile.json": "5ed1ad75e15c832f2baf0029df3855b1a0bd02261dc8a21fdb72d2a9c3b79d10",
+    "docs/results/pretrained-tests.json": "180ae751f765746a6664d8287e8cf2f980f417623002c89aa7fc671a84746cec",
+    "docs/results/pretrained-tests.log": "5620dee1f897e16fd0330ec3dcdcad807b5931189c5871c75c7d57ca17688eda",
+    "docs/results/source-manifest.json": "7dcb0729eb8ac1aeb37f980ec14ef50ce6a01d7845edd5b35789fb93f554c74c",
+    "docs/results/storage-microbenchmark.json": "892dc83a41aa68a995448a8e1a9183e31131ccd010d9668c6e9773f93d7071b7",
+    "docs/results/supplemental-verification.json": "211e131d5c7f0716d06b4a74127c01a81204511b1e2856fb8099ed4835e7310f",
+    "docs/results/uv-verification.json": "102752ba17fe19aeee37cef97d29fa2fc701c93d9ca6e15dcf9b3889974a3c5f",
+    "docs/results/verification.json": "a47d9788560c3252f55bd16dc1b8e7ff4220f38ca855bf4dc1db4b58ddc14d27",
+    "docs/results/workloads-baseline-source.json": "dfc1e26d75d47bd54fe35c18b3c12bc568162e817b652a1d042c54d91c659163"
+  }
+}

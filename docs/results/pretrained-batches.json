@@ -1,0 +1,193 @@
+{
+  "measurements": {
+    "kind": "measured pretrained inference on one device",
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "torch.bfloat16",
+    "torch": "2.6.0+cu124",
+    "python": "3.10.12",
+    "dependencies": {
+      "transformers": "5.18.0",
+      "flash-linear-attention": "0.4.1",
+      "fla-core": "0.4.1"
+    },
+    "device": "NVIDIA H100 PCIe",
+    "chunk_size": 4096,
+    "rows": [
+      {
+        "length": 1,
+        "batch": 2,
+        "seconds": 0.04027360677719116,
+        "samples_seconds": [
+          0.0419873371720314,
+          0.04027360677719116,
+          0.039913590997457504
+        ],
+        "decode_step_seconds": 0.02978288009762764,
+        "decode_samples_seconds": [
+          0.035461295396089554,
+          0.028906863182783127,
+          0.02978288009762764
+        ],
+        "kv_bytes": 39542784,
+        "full_attention_bytes": 24576,
+        "linear_state_bytes": 39518208,
+        "dense_cache_estimate_bytes": 98304,
+        "peak_gpu_bytes": 1650149376
+      },
+      {
+        "length": 64,
+        "batch": 2,
+        "seconds": 0.04109147936105728,
+        "samples_seconds": [
+          0.044675856828689575,
+          0.04109147936105728,
+          0.04047247767448425
+        ],
+        "decode_step_seconds": 0.02934499830007553,
+        "decode_samples_seconds": [
+          0.03333762288093567,
+          0.02934499830007553,
+          0.028974447399377823
+        ],
+        "kv_bytes": 41091072,
+        "full_attention_bytes": 1572864,
+        "linear_state_bytes": 39518208,
+        "dense_cache_estimate_bytes": 6291456,
+        "peak_gpu_bytes": 1658999808
+      },
+      {
+        "length": 1024,
+        "batch": 2,
+        "seconds": 0.04302891716361046,
+        "samples_seconds": [
+          0.04302891716361046,
+          0.0422232449054718,
+          0.04790028929710388
+        ],
+        "decode_step_seconds": 0.0288657508790493,
+        "decode_samples_seconds": [
+          0.029114611446857452,
+          0.028753802180290222,
+          0.0288657508790493
+        ],
+        "kv_bytes": 64684032,
+        "full_attention_bytes": 25165824,
+        "linear_state_bytes": 39518208,
+        "dense_cache_estimate_bytes": 100663296,
+        "peak_gpu_bytes": 1836651520
+      },
+      {
+        "length": 8192,
+        "batch": 2,
+        "seconds": 0.24346189945936203,
+        "samples_seconds": [
+          0.24346189945936203,
+          0.24217111244797707,
+          0.24347638338804245
+        ],
+        "decode_step_seconds": 0.02924496680498123,
+        "decode_samples_seconds": [
+          0.030102208256721497,
+          0.02924496680498123,
+          0.02883068472146988
+        ],
+        "kv_bytes": 240844800,
+        "full_attention_bytes": 201326592,
+        "linear_state_bytes": 39518208,
+        "dense_cache_estimate_bytes": 805306368,
+        "peak_gpu_bytes": 2786527232
+      },
+      {
+        "length": 1,
+        "batch": 4,
+        "seconds": 0.04045212268829346,
+        "samples_seconds": [
+          0.04045212268829346,
+          0.040752213448286057,
+          0.03953871876001358
+        ],
+        "decode_step_seconds": 0.02922208607196808,
+        "decode_samples_seconds": [
+          0.2933631017804146,
+          0.02922208607196808,
+          0.028982825577259064
+        ],
+        "kv_bytes": 79085568,
+        "full_attention_bytes": 49152,
+        "linear_state_bytes": 79036416,
+        "dense_cache_estimate_bytes": 196608,
+        "peak_gpu_bytes": 1805526528
+      },
+      {
+        "length": 64,
+        "batch": 4,
+        "seconds": 0.04249940440058708,
+        "samples_seconds": [
+          0.043026410043239594,
+          0.04249940440058708,
+          0.0420507974922657
+        ],
+        "decode_step_seconds": 0.029440511018037796,
+        "decode_samples_seconds": [
+          0.029440511018037796,
+          0.029649998992681503,
+          0.029056545346975327
+        ],
+        "kv_bytes": 82182144,
+        "full_attention_bytes": 3145728,
+        "linear_state_bytes": 79036416,
+        "dense_cache_estimate_bytes": 12582912,
+        "peak_gpu_bytes": 1754798080
+      },
+      {
+        "length": 1024,
+        "batch": 4,
+        "seconds": 0.05133162811398506,
+        "samples_seconds": [
+          0.05131444334983826,
+          0.0514182485640049,
+          0.05133162811398506
+        ],
+        "decode_step_seconds": 0.029174398630857468,
+        "decode_samples_seconds": [
+          0.029309354722499847,
+          0.029174398630857468,
+          0.029082581400871277
+        ],
+        "kv_bytes": 129368064,
+        "full_attention_bytes": 50331648,
+        "linear_state_bytes": 79036416,
+        "dense_cache_estimate_bytes": 201326592,
+        "peak_gpu_bytes": 2109037568
+      },
+      {
+        "length": 8192,
+        "batch": 4,
+        "seconds": 0.479415912181139,
+        "samples_seconds": [
+          0.4823613464832306,
+          0.479415912181139,
+          0.478155504912138
+        ],
+        "decode_step_seconds": 0.0306868813931942,
+        "decode_samples_seconds": [
+          0.03215703368186951,
+          0.0306868813931942,
+          0.03045671433210373
+        ],
+        "kv_bytes": 481689600,
+        "full_attention_bytes": 402653184,
+        "linear_state_bytes": 79036416,
+        "dense_cache_estimate_bytes": 1610612736,
+        "peak_gpu_bytes": 3975028736
+      }
+    ],
+    "profile": {
+      "lengths": [],
+      "seconds": [],
+      "kv_bytes": []
+    },
+    "dense_comparison": "configuration byte estimate only; no dense-model timing or quality measurement"
+  }
+}

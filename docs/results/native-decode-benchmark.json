@@ -1,0 +1,90 @@
+{
+  "model": "Qwen/Qwen3.5-0.8B",
+  "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "torch": "2.6.0+cu124",
+  "transformers": "5.18.0",
+  "causal_conv1d": "1.5.3.post1",
+  "dtype": "torch.bfloat16",
+  "gpu": "NVIDIA H100 PCIe",
+  "rows": [
+    {
+      "prefix_tokens": 64,
+      "output_tokens": 32,
+      "samples_seconds": {
+        "restore_each_step": [
+          0.8300783671438694,
+          0.8385473191738129,
+          0.8295429237186909
+        ],
+        "native_cache": [
+          0.7568677961826324,
+          0.7676617093384266,
+          0.7673021331429482
+        ]
+      },
+      "median_seconds": {
+        "restore_each_step": 0.8300783671438694,
+        "native_cache": 0.7673021331429482
+      },
+      "tokens_per_second": {
+        "restore_each_step": 38.550576989622655,
+        "native_cache": 41.70456280230152
+      },
+      "tokens_equal": true
+    },
+    {
+      "prefix_tokens": 1024,
+      "output_tokens": 32,
+      "samples_seconds": {
+        "restore_each_step": [
+          0.8260680325329304,
+          0.8235699199140072,
+          0.852299228310585
+        ],
+        "native_cache": [
+          0.7624030411243439,
+          0.7725166343152523,
+          0.7734341844916344
+        ]
+      },
+      "median_seconds": {
+        "restore_each_step": 0.8260680325329304,
+        "native_cache": 0.7725166343152523
+      },
+      "tokens_per_second": {
+        "restore_each_step": 38.73772950864595,
+        "native_cache": 41.423056253493286
+      },
+      "tokens_equal": true
+    },
+    {
+      "prefix_tokens": 8192,
+      "output_tokens": 32,
+      "samples_seconds": {
+        "restore_each_step": [
+          0.8277484253048897,
+          0.8329322822391987,
+          0.831823218613863
+        ],
+        "native_cache": [
+          0.7664490714669228,
+          0.7697061076760292,
+          0.765419851988554
+        ]
+      },
+      "median_seconds": {
+        "restore_each_step": 0.831823218613863,
+        "native_cache": 0.7664490714669228
+      },
+      "tokens_per_second": {
+        "restore_each_step": 38.469712414765596,
+        "native_cache": 41.75098019070535
+      },
+      "tokens_equal": true
+    }
+  ],
+  "source_sha256": {
+    "hf_backend.py": "80a286f49b33d7185c23c9846eb681beb9dbbbf3e66e9029a27c8ca6f9a52403",
+    "hf_decode.py": "1a01c8cbe2f06b454787338a7e0dd05c7fb27f3c4887562392c7cdb519f97e9d"
+  }
+}

@@ -61,11 +61,11 @@ The tiny model is deterministic and untrained, with three recurrent attention la
 | Compatible-request decoder batching | [`batch_decode.py`](src/prefill_relay/batch_decode.py) |
 | Measured profiling and uniform, burst, skew and changing-bandwidth workloads | [`hf_profile.py`](src/prefill_relay/hf_profile.py), [`workload.py`](src/prefill_relay/workload.py), [`bench.py`](src/prefill_relay/bench.py) |
 
-See [architecture](docs/architecture.md) for invariants and [implementation and operations](docs/implementation.md) for profiling commands, workload metrics, test coverage and evidence boundaries.
+See [verified H100 results](docs/validation.md) for the completed checks and measured limits, [architecture](docs/architecture.md) for invariants and [implementation and operations](docs/implementation.md) for profiling commands, workload metrics, test coverage and evidence boundaries.
 
 ## Measurements and limits
 
-[The pretrained profile](docs/results/pretrained-profile.json) records H100 measurements from 1 through 131072 input tokens. [The batch profile](docs/results/pretrained-batches.json) records batches of 2 and 4 through 8192 tokens. These are backend compute measurements; service benchmarks also include cache access, CPU staging, serialization, transfer and control overhead.
+[The final pretrained profile](docs/results/h100-profile-final.json) records H100 measurements from 1 through 131072 input tokens with native-cache continuation and the optional CUDA convolution. [The batch profile](docs/results/pretrained-batches.json) records batches of 2 and 4 through 8192 tokens. These are backend compute measurements; service benchmarks also include cache access, CPU staging, serialization, transfer and control overhead.
 
 [The initial trained validation](docs/results/pretrained-initial.json) preserved transported state and decode logits exactly. Recomputing the prompt from a saved bf16 prefix produced a maximum logit difference of 0.15625 in that case, while preserving the next token. Exact wire transport does not imply bitwise equality between different floating-point execution shapes.
 
