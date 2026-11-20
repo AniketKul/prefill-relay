@@ -34,6 +34,19 @@ class ServingPaths(unittest.TestCase):
             self.assertEqual(other['generated_tokens'], first['generated_tokens'])
             self.assertFalse(service.replications)
 
+    def test_graph_mode_must_match_local_device_and_decode_profile(self):
+        from prefill_relay.runtime import Coordinator
+        with tempfile.TemporaryDirectory() as path:
+            with self.assertRaisesRegex(ValueError, 'trained CUDA'):
+                Coordinator(path, backend='hf', device='cpu', decode_graphs=True)
+            with self.assertRaisesRegex(ValueError, 'same decode graph mode'):
+                Coordinator(path, backend='hf', device='cuda', profile={'decode_graphs': True})
+            with self.assertRaisesRegex(ValueError, 'same decode graph mode'):
+                Coordinator(path, backend='hf', device='cuda', profile={}, decode_graphs=True)
+            ready = Coordinator(path, backend='hf', device='cuda', decode_graphs=True,
+                                profile={'measurements': {'decode_graphs': True}})
+            self.assertTrue(ready.config['decode_graphs'])
+
     def test_decode_cap_covers_every_batch_size_the_runtime_can_emit(self):
         from prefill_relay.runtime import Coordinator
         profile = {'profile':{'lengths':[128]}, 'rows':[

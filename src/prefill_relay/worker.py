@@ -37,6 +37,9 @@ class ModelWorker:
         self.torch=torch; torch.set_num_threads(config.get('cpu_threads',2))
         self.backend=load_backend(config['backend'],config['device'],config.get('model_id'),config.get('revision','main'))
         self.token=config['token']; self.role=config['role']; self.pending={}; self.lock=threading.RLock()
+        self.decode_graphs = config.get('decode_graphs', False)
+        if self.decode_graphs:
+            self.backend.enable_decode_graphs()
         model=self.backend
         identity=getattr(model,'identity',getattr(getattr(model,'model',None),'config',None))
         namespace=hashlib.sha256(model.encode({'identity':identity})).hexdigest()
@@ -71,7 +74,7 @@ class ModelWorker:
             return dict(role=self.role,cache_url=self.node.url,namespace=self.pool.namespace,
                 rdma_receiver=list(self.rdma_receiver.address) if self.rdma_receiver else None,
                 receiver=list(self.receiver.address),vocab_size=backend.vocab_size,
-                model_id=backend.model_id,revision=backend.revision,kernels=getattr(backend,'kernel_provenance',{}),pid=__import__('os').getpid())
+                model_id=backend.model_id,revision=backend.revision,decode_graphs=self.decode_graphs,kernels=getattr(backend,'kernel_provenance',{}),pid=__import__('os').getpid())
         if op=='link':
             sender = self.egress_sender
             return sender.snapshot() if sender is not None else {}
@@ -164,11 +167,15 @@ class ModelWorker:
             if op=='warmup':
                 tokens=data['tokens']; self._tokens(tokens)
                 vector=self.torch.tensor(tokens,dtype=self.torch.int64,device=backend.device)
-                for batch in ([1,2,4] if backend.sequence_axis==2 else [1]):
+                batches = range(1, self.batcher.max_batch+1) if self.decode_graphs else ([1,2,4] if backend.sequence_axis==2 else [1])
+                for batch in batches:
                     inputs=vector if batch==1 else vector.unsqueeze(0).repeat(batch,1)
                     logits,state=backend.prefill(inputs)
                     token=logits.reshape(batch,backend.vocab_size).argmax(-1)
-                    backend.forward(token.reshape(batch,1) if batch>1 else token.reshape(1),state)
+                    if self.decode_graphs:
+                        backend.generate(state, 2)
+                    else:
+                        backend.forward(token.reshape(batch,1) if batch>1 else token.reshape(1),state)
                 self.sync(); return {'warmed':True}
             if op=='reference':
                 tokens=data['tokens']; self._tokens(tokens)

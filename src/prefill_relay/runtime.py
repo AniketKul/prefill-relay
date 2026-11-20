@@ -26,7 +26,7 @@ class Coordinator:
                  bandwidth_bytes_s=100*2**20,threshold=128,profile=None,output_tokens=8,
                  local_workers=2,remote_workers=1,connections=4,cache_bytes=4*2**30,max_batch=4,batch_wait_s=.005,receive_bytes=4*2**30,block_tokens=16,
                  local_rdma_address=None, decode_slo_tps=None, remote_host=None, remote_project='prefill-relay',
-                 remote_device=None, remote_cache_dir=None, remote_profile=None, ssh_streams=1):
+                 remote_device=None, remote_cache_dir=None, remote_profile=None, ssh_streams=1, decode_graphs=False):
         count(local_workers,'local workers',zero=False); count(remote_workers,'remote workers',zero=False)
         for value,name in [(connections,'connections'),(max_batch,'maximum batch'),(output_tokens,'output tokens'),
                            (cache_bytes,'cache bytes'),(receive_bytes,'receive bytes'),(block_tokens,'block tokens')]:
@@ -41,6 +41,10 @@ class Coordinator:
         self.ssh_options = dict(project=remote_project, device=remote_device, cache_dir=remote_cache_dir, streams=ssh_streams)
         if remote_profile and not profile:
             raise ValueError('a remote profile requires a local profile')
+        if decode_graphs and (backend != 'hf' or str(device).split(':')[0] != 'cuda'):
+            raise ValueError('decode graphs require the trained CUDA backend')
+        if profile is not None and bool(profile.get('measurements', profile).get('decode_graphs', False)) != decode_graphs:
+            raise ValueError('local profile and service must use the same decode graph mode')
         self.decode_calibration = None
         if decode_slo_tps is not None:
             if profile is None: raise ValueError('decode SLO calibration requires a measured profile')
@@ -59,7 +63,7 @@ class Coordinator:
             max_batch = contiguous[-1]['batch']
             self.decode_calibration.update(batch_max=max_batch,
                                            decode_step_s=max(row['worst_step_s'] for row in contiguous))
-        self.config=dict(local_rdma_address=local_rdma_address,backend=backend,device=device,model_id=model_id,revision=revision,
+        self.config=dict(decode_graphs=decode_graphs,local_rdma_address=local_rdma_address,backend=backend,device=device,model_id=model_id,revision=revision,
                          connections=connections,block_tokens=block_tokens,max_batch=max_batch,batch_wait_s=batch_wait_s,cache_bytes=cache_bytes,receive_bytes=receive_bytes,token=secrets.token_urlsafe(32))
         self.nlocal=local_workers; self.nremote=remote_workers; self.threshold=threshold
         self.monitor=LinkMonitor(bandwidth_bytes_s); self.bandwidth=bandwidth_bytes_s
@@ -79,7 +83,7 @@ class Coordinator:
             for cluster,n in [('remote',self.nremote),('local',self.nlocal)]:
                 for i in range(n):
                     name=f'{cluster}-{i}'; role='decode' if cluster=='local' and i else 'prefill'
-                    config={**self.config,'local_rdma_address':self.config['local_rdma_address'] if cluster=='local' else None,'role':role,'cache_path':str(self.path/(name+'.sqlite'))}
+                    config={**self.config,'decode_graphs':self.config['decode_graphs'] and cluster=='local','local_rdma_address':self.config['local_rdma_address'] if cluster=='local' else None,'role':role,'cache_path':str(self.path/(name+'.sqlite'))}
                     if self.remote_host and cluster == 'remote':
                         from .ssh_worker import SSHWorker
                         launcher = SSHWorker(config, host=self.remote_host, **self.ssh_options)
