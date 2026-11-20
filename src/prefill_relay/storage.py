@@ -16,6 +16,10 @@ from .analytics import count
 from .cache import Match
 
 
+class CheckpointConflict(ValueError):
+    """The same token checkpoint already holds a different numerical state."""
+
+
 class PersistentHybridCache:
     """One process owns a database; network clients share its serialized operations."""
     def __init__(self, path, block_tokens=16, block_bytes=4096, capacity_blocks=1024,
@@ -213,7 +217,7 @@ class PersistentHybridCache:
             full_json, recurrent_json = json.dumps(full_keys, sort_keys=True), json.dumps(recurrent_keys, sort_keys=True)
             prior = self._db.execute('SELECT full_keys,recurrent_keys FROM checkpoints WHERE id=?', (identity,)).fetchone()
             # Validate before reserving: eviction must not erase a conflicting checkpoint.
-            if prior and prior != (full_json, recurrent_json): raise ValueError('checkpoint group schema conflict')
+            if prior and prior != (full_json, recurrent_json): raise CheckpointConflict('checkpoint group schema conflict')
             existing = {}
             incoming_units = {key: math.ceil(len(value) / self.block_bytes) for key, value in incoming.items()}
             for key, value in incoming.items():

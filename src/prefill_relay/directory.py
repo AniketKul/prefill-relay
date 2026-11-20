@@ -4,8 +4,7 @@ import math
 import threading
 
 from .analytics import count
-from .cache import Match
-from .cache_service import block_hashes, prepare_delta, restore_delta, _json_bytes
+from .cache_service import StalePrefix, apply_delta, checkpoint_manifest, prepare_delta, _json_bytes
 
 
 @dataclass(frozen=True)
@@ -86,14 +85,17 @@ class GlobalDirectory:
         tokens = tuple(tokens)
         length = sender.match_length(tokens)
         if not length: return Migration(source, target)
-        if hasattr(receiver, 'known'):
-            inventory = receiver.known(tokens[:length])
-            cached_length, known = inventory['length'], inventory['hashes']
-        else:
-            cached = receiver.match(tokens[:length])
-            cached_length, known = cached.length, block_hashes(cached)
-        if cached_length == length:
-            return Migration(source, target, length, status='already_cached')
+        def manifest(node):
+            return node.known(tokens[:length]) if hasattr(node, 'known') else checkpoint_manifest(node.match(tokens[:length]))
+        target_manifest = manifest(receiver)
+        known = target_manifest['hashes']
+        if target_manifest['length'] == length:
+            source_manifest = manifest(sender)
+            if source_manifest['length'] != length:
+                return Migration(source, target, status='stale_prefix')
+            if 'recurrent_hashes' in target_manifest and source_manifest == target_manifest:
+                return Migration(source, target, length, status='already_cached')
+            return Migration(source, target, status='different_checkpoint')
         if hasattr(sender, 'prepare_delta'):
             prepared = sender.prepare_delta(tokens, known, budget_bytes, rate_limit=source[0] != target[0])
         else:
@@ -101,6 +103,7 @@ class GlobalDirectory:
         if prepared['status'] != 'ready':
             return Migration(source, target, prepared['length'], status=prepared['status'])
         handle = prepared['handle']
+        acknowledged = False
         try:
             payload_bytes = len(_json_bytes(prepared['delta']))
             if payload_bytes != prepared['payload_bytes'] or payload_bytes > budget_bytes:
@@ -112,15 +115,15 @@ class GlobalDirectory:
                 if receiver.apply_delta(tokens[:length], prepared['delta'], known) != length:
                     raise RuntimeError('receiver did not verify the checkpoint')
             else:
-                match = restore_delta(prepared['delta'], cached, known)
-                receiver.put(tokens[:length], match.full, match.recurrent)
-                if receiver.match(tokens[:length]) != match:
-                    raise RuntimeError('receiver did not retain the complete checkpoint')
+                apply_delta(receiver, tokens[:length], prepared['delta'], known)
             sender.complete_transfer(handle, acknowledged=True)
-        except BaseException:
-            try: sender.abort_transfer(handle)
-            except (KeyError, ConnectionError): pass
-            raise
+            acknowledged = True
+        except StalePrefix:
+            return Migration(source, target, 0, payload_bytes, 'stale_prefix')
+        finally:
+            if not acknowledged:
+                try: sender.abort_transfer(handle)
+                except (KeyError, ConnectionError): pass
         return Migration(source, target, length, payload_bytes, 'transferred')
 
     def rebalance(self, namespace, tokens, loads=None, budget_bytes=0, allow_cross_cluster=False):

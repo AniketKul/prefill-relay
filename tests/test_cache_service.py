@@ -127,6 +127,60 @@ class CacheServiceTests(unittest.TestCase):
         with PersistentHybridCache(Path(self.temp.name) / 'local.db') as cache:
             with self.assertRaises(ValueError): CacheNode(cache, host='0.0.0.0')
 
+    def test_target_evicted_or_replaced_after_advertising_blocks(self):
+        source, target = self.start('source.db'), self.start('target.db')
+        self.store(source)
+        directory = GlobalDirectory()
+        directory.register('west', 'a', source)
+        directory.register('east', 'b', target)
+        tokens = [1, 2, 3, 4]
+        real_apply = target.apply_delta
+        from prefill_relay.cache_service import _json_bytes
+
+        for replacement in (None, b'other12'):
+            with self.subTest(replacement=replacement):
+                target.put(tokens[:2], {'full': (b'full12',)}, {'recurrent': b'state12'})
+                charged = []
+                def change_prefix(complete, delta, known):
+                    charged.append(len(_json_bytes(delta)))
+                    self.assertIsNone(delta['full']['full'][0])
+                    self.assertTrue(target.delete(tokens[:2]))
+                    if replacement:
+                        target.put(tokens[:2], {'full': (replacement,)}, {'recurrent': b'state12'})
+                    return real_apply(complete, delta, known)
+                with patch.object(target, 'apply_delta', side_effect=change_prefix):
+                    result = directory.migrate(('west','a'),('east','b'),'model-a',tokens,4096)
+                self.assertEqual(result.status, 'stale_prefix')
+                self.assertEqual(result.length, 0)
+                self.assertEqual(charged, [result.bytes_transferred])
+                self.assertGreater(result.bytes_transferred, 0)
+                self.assertEqual(source.stats()['transfer_blocks'], 0)
+                self.assertLess(target.match_length(tokens), 4)
+
+    def test_full_hit_requires_equal_full_and_recurrent_content(self):
+        source, target = self.start('source.db'), self.start('target.db')
+        source.put([1,2], {'full':(b'full12',)}, {'recurrent':b'state12'})
+        directory = GlobalDirectory()
+        directory.register('west', 'a', source)
+        directory.register('east', 'b', target)
+        for full, state, expected in [(b'full12', b'state12', 'already_cached'),
+                                      (b'other12', b'state12', 'different_checkpoint'),
+                                      (b'full12', b'otherstate', 'different_checkpoint')]:
+            target.put([1,2], {'full':(full,)}, {'recurrent':state})
+            result = directory.migrate(('west','a'),('east','b'),'model-a',[1,2],4096)
+            self.assertEqual(result.status, expected)
+            self.assertEqual(result.length, 2 if expected == 'already_cached' else 0)
+            self.assertEqual(result.bytes_transferred, 0)
+            self.assertEqual(target.match([1,2]).recurrent['recurrent'], state)
+            self.assertTrue(target.delete([1,2]))
+
+    def test_invalid_delta_reference_remains_a_protocol_error(self):
+        target = self.start('target.db')
+        delta = {'length':2, 'full':{'full':[None]}, 'recurrent':{'r':'eA=='}}
+        with self.assertRaisesRegex(ValueError, 'absent from its manifest') as failure:
+            target.apply_delta([1,2], delta, {})
+        self.assertIs(type(failure.exception), ValueError)
+
     def test_receiver_capacity_failure_releases_sender_pins(self):
         first, second = self.start('source.db'), self.start('small.db', capacity_blocks=1)
         self.store(first)

@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 
 from .analytics import count
 from .cache import Match
+from .storage import CheckpointConflict
 
 
 def encode_match(match):
@@ -87,6 +88,15 @@ def block_hashes(match):
             for group, blocks in match.full.items()}
 
 
+class StalePrefix(ValueError):
+    """A local checkpoint used to prepare an incremental transfer changed."""
+
+
+def checkpoint_manifest(match):
+    return dict(length=match.length, hashes=block_hashes(match),
+                recurrent_hashes={g: hashlib.sha256(v).hexdigest() for g, v in match.recurrent.items()})
+
+
 def restore_delta(delta, cached, expected=None):
     """Reconstruct a complete checkpoint from a delta and retained local bytes."""
     if not isinstance(delta, dict) or not isinstance(delta.get('full'), dict):
@@ -97,15 +107,34 @@ def restore_delta(delta, cached, expected=None):
         known, values = cached.full.get(group, ()), []
         for index, value in enumerate(encoded):
             if value is None:
-                if index >= len(known): raise ValueError('delta references an unavailable local block')
                 if expected is not None:
-                    hashes = expected.get(group, [])
-                    if index >= len(hashes) or hashlib.sha256(known[index]).hexdigest() != hashes[index]:
-                        raise ValueError('cached block changed during migration')
+                    hashes = expected.get(group)
+                    if not isinstance(hashes, list) or index >= len(hashes):
+                        raise ValueError('delta references a block absent from its manifest')
+                    digest = hashes[index]
+                    if not isinstance(digest, str) or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
+                        raise ValueError('invalid block digest')
+                    if index >= len(known) or hashlib.sha256(known[index]).hexdigest() != digest:
+                        raise StalePrefix('cached block changed during migration')
+                elif index >= len(known):
+                    raise ValueError('delta references an unavailable local block')
                 value = base64.b64encode(known[index]).decode('ascii')
             values.append(value)
         full[group] = values
     return decode_match(dict(length=delta.get('length'), full=full, recurrent=delta.get('recurrent')))
+
+
+def apply_delta(cache, tokens, delta, known):
+    match = restore_delta(delta, cache.match(tokens), known)
+    if match.length != len(tokens):
+        raise ValueError('delta checkpoint length mismatch')
+    try:
+        cache.put(tokens, match.full, match.recurrent)
+    except CheckpointConflict as error:
+        raise StalePrefix('another checkpoint was committed during migration') from error
+    if cache.match(tokens) != match:
+        raise StalePrefix('checkpoint changed before verification')
+    return match.length
 
 
 class _Server(ThreadingHTTPServer):
@@ -184,7 +213,7 @@ class CacheNode:
                     result = owner._dispatch(self.path, data)
                     self.reply(200, result)
                 except (ValueError, TypeError, KeyError, MemoryError, RuntimeError) as error:
-                    status = 507 if isinstance(error, MemoryError) else 400
+                    status = 409 if isinstance(error, StalePrefix) else 507 if isinstance(error, MemoryError) else 400
                     self.reply(status, dict(error=type(error).__name__, message=str(error)))
                 except (BrokenPipeError, ConnectionResetError, TimeoutError):
                     if self.path == '/prepare_delta' and result and result.get('handle'):
@@ -207,14 +236,10 @@ class CacheNode:
             if not isinstance(tokens, list) or len(tokens) > 1048576: raise ValueError('invalid tokens')
             if operation == '/known':
                 match = cache.match(tokens)
-                return dict(length=match.length, hashes=block_hashes(match))
+                return checkpoint_manifest(match)
             if operation == '/apply_delta':
                 if not isinstance(data.get('known'), dict): raise ValueError('expected block digests')
-                match = restore_delta(data.get('delta'), cache.match(tokens), data['known'])
-                if match.length != len(tokens): raise ValueError('delta checkpoint length mismatch')
-                cache.put(tokens, match.full, match.recurrent)
-                if cache.match(tokens) != match: raise RuntimeError('checkpoint verification failed')
-                return dict(length=match.length)
+                return dict(length=apply_delta(cache, tokens, data.get('delta'), data['known']))
             if operation == '/match': return encode_match(cache.match(tokens))
             if operation == '/match_length': return dict(length=cache.match_length(tokens))
             if operation == '/delete': return dict(deleted=cache.delete(tokens))
@@ -280,7 +305,7 @@ class CacheClient:
             raw = error.read(self.max_body_bytes + 1)
             if len(raw) > self.max_body_bytes: raise ValueError('error response exceeds configured byte limit') from error
             result = json.loads(raw)
-            error_type = dict(ValueError=ValueError, TypeError=ValueError, KeyError=KeyError,
+            error_type = dict(StalePrefix=StalePrefix, ValueError=ValueError, TypeError=ValueError, KeyError=KeyError,
                               MemoryError=MemoryError, RuntimeError=RuntimeError, PermissionError=PermissionError)
             raise error_type.get(result.get('error'), RuntimeError)(result.get('message', 'cache request failed')) from error
         except (URLError, TimeoutError, ConnectionError) as error:
