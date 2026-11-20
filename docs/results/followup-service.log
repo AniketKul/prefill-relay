@@ -1,0 +1,7 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  95%|█████████▍| 303/320 [00:00<00:00, 2966.43it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3059.16it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3306.52it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3291.36it/s]
+{"output": "docs/results/followup-service.json", "scenario": "validate", "completed": true, "passed": true}

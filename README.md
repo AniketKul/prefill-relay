@@ -4,6 +4,8 @@ prefill-relay routes prefill between local and remote worker processes, transfer
 
 The default deployment runs prefill and decode processes on one host and one shared GPU. The coordinator can also launch prefill on a separate SSH host. Remote traffic uses TCP with an aggregate bandwidth budget. On a host with a configured RDMA interface, local workers can hand state to one another over RoCE.
 
+[H100 and two-host validation](docs/h100-followup.md) records the measured limits, raw results and tested source revisions.
+
 ## Quick start
 
 Python 3.10 is selected by the project. Use `uv`; the lockfile pins dependencies.
@@ -59,9 +61,9 @@ The tiny model is deterministic and untrained, with three recurrent attention la
 | Aggregate bandwidth reservations shared by worker processes | [`rate_limit.py`](src/prefill_relay/rate_limit.py) |
 | Cache-aware threshold updates and drained role changes | [`scheduler.py`](src/prefill_relay/scheduler.py), [`telemetry.py`](src/prefill_relay/telemetry.py) |
 | Compatible-request decoder batching | [`batch_decode.py`](src/prefill_relay/batch_decode.py) |
-| Measured profiling and uniform, burst, skew and changing-bandwidth workloads | [`hf_profile.py`](src/prefill_relay/hf_profile.py), [`workload.py`](src/prefill_relay/workload.py), [`bench.py`](src/prefill_relay/bench.py) |
+| Measured profiling and uniform, burst, skew, changing-bandwidth and log-normal workloads | [`hf_profile.py`](src/prefill_relay/hf_profile.py), [`workload.py`](src/prefill_relay/workload.py), [`bench.py`](src/prefill_relay/bench.py) |
 
-See [verified H100 results](docs/validation.md) for the completed checks and measured limits, [architecture](docs/architecture.md) for invariants and [implementation and operations](docs/implementation.md) for profiling commands, workload metrics, test coverage and evidence boundaries.
+See [the original H100 measurements](docs/validation.md), [multi-site routing](docs/federation.md), [architecture](docs/architecture.md) for invariants and [implementation and operations](docs/implementation.md) for profiling commands, workload metrics, test coverage and evidence boundaries.
 
 ## Measurements and limits
 

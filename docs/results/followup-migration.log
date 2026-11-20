@@ -1,0 +1,7 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3323.19it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3509.53it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  97%|█████████▋| 309/320 [00:00<00:00, 3087.79it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3127.81it/s]
+{"output": "docs/results/followup-migration.json", "scenario": "migration", "completed": true, "passed": true}

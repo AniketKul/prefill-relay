@@ -15,7 +15,7 @@ uv run --locked --extra trained prefill-relay profile \
   --output docs/results/local-run/profile.json
 ```
 
-Each shape receives an untimed prefill warmup. Current profiles restore a native decode cache once per continuation and average up to eight decode steps per timing sample; earlier profiles measured individual restored-cache steps. Output includes all timing samples, medians, raw attention-state bytes, peak device allocation, model revision and environment. `kv_bytes` excludes token IDs, cached logits, serialization headers and transport overhead. The dense-cache comparison is a configuration-based byte estimate; it does not run a dense model or establish timing or quality equivalence.
+Each shape receives an untimed prefill warmup. Current profiles restore a native decode cache once per continuation and average up to eight decode steps per timing sample; earlier profiles measured individual restored-cache steps. Output includes all timing samples, medians, raw attention-state bytes, peak device allocation, model revision and environment. `kv_bytes` excludes token IDs, cached logits, serialization headers and transport overhead. The dense-cache estimate in this command uses the model configuration. A [separate dense-model run](dense-profile.md) measures actual prefill time and cache bytes.
 
 The [final single-request profile](results/h100-profile-final.json), using the optional CUDA convolution, contains these observed medians:
 
@@ -46,6 +46,19 @@ uv run --locked --extra trained prefill-relay bench \
 
 `--scenario suite` runs uniform, burst, skew, changing-bandwidth and warm-cache comparisons in one deployment. Uniform, burst and bandwidth inputs have distinct final tokens to keep real prefill work in the arrival stream.
 
+The `lognormal` scenario samples prompt lengths from the truncated log-normal distribution and runs each policy on the same seeded requests. Use a measured profile spanning the sampled lengths. For example:
+
+```bash
+uv run --locked --extra trained --extra cuda-kernels prefill-relay bench \
+  --backend hf --device cuda --model Qwen/Qwen3.5-0.8B \
+  --revision 2fc06364715b967f1860aea9cf38778875588b17 \
+  --scenario lognormal --profile docs/results/h100-decode-calibration.json \
+  --calibrate-tps 25 --requests 3 --output-tokens 1024 --block-tokens 256 \
+  --rate 0.1 --bandwidth-mib 1000 --output docs/results/local-run/lognormal.json
+```
+
+The calibration target chooses an admissible decode batch limit. The workload independently scores per-request goodput against 40 decode tokens/s. The controller counts complete cache hits in decode demand and only charges misses to the prefill and egress stages.
+
 The burst scenario groups arrivals while retaining the specified average interval. Skew repeats a deterministic hot prompt. Bandwidth drops to one twentieth of its initial value halfway through the offered arrival span. These are controlled generated workloads rather than recorded production traffic.
 
 `--scenario long --lengths 1024 8192 32768 131072` runs independent-process remote handoff for each length and checks generated tokens against the reference. `--cache-gib` sets each worker's reusable and staged-transfer cache budget, defaulting to 4 GiB. The receiver has an independent 4 GiB payload bound; Python callers can set `receive_bytes`. `--block-tokens` selects prefix-block granularity, defaulting to 16. Full blocks consume their actual rounded byte units, and distinct numerical variants retain separate content identities. Long runs also need RAM for model state, codec copies and database activity. `--remote-workers` changes the number of logical prefill processes; it does not add GPUs.
@@ -58,7 +71,7 @@ The workload runner schedules arrivals independently of completion and bounds th
 
 - Throughput is completed requests divided by the interval from the first scheduled arrival to final completion.
 - Mean/P90 TTFT includes dispatch delay and executor waiting, then coordinator-observed first-token readiness.
-- `transferred_bytes` counts cross-cluster state and migration bytes. Local prefill-to-decode TCP traffic is retained in sender statistics but excluded from this cross-cluster metric.
+- `transferred_bytes` counts cross-cluster state and migration bytes. Local prefill-to-decode traffic is retained in sender statistics but excluded from this cross-cluster metric.
 - Output throughput counts all generated tokens. Per-request decode speed uses `(output_tokens - 1) / decode_s`, excluding the first token produced by prefill.
 - The trained decoder restores the native model cache once per continuation, preserving the stored checkpoint. Runtime `decode_s` includes batch coalescing and compute-lock waiting as well as synchronized decode compute. Batch size and batch queue time are retained separately.
 - SLO goodput counts completed requests meeting the decode speed threshold and optional TTFT threshold. The runner defaults to 40 decode tokens/s; a one-token output has no decode interval.

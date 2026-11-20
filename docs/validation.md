@@ -1,4 +1,6 @@
-# Verified H100 execution
+# Initial single-host H100 validation
+
+This report describes the original single-host run. The [subsequent validation](h100-followup.md) covers TCP connection reuse, local RoCE, separate hosts, dense-model profiling, batch calibration and multi-site routing.
 
 The implementation runs real trained hybrid inference through independent prefill and decode processes, durable prefix caches, layer streaming, adaptive placement and decoder batching. This validation uses one H100 PCIe with 80 GB and three model processes sharing that GPU. All network measurements use loopback and application bandwidth pacing.
 

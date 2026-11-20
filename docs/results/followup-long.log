@@ -1,0 +1,8 @@
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 4282.26it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights:  88%|████████▊ | 281/320 [00:00<00:00, 2806.89it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 2715.07it/s]
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 3373.18it/s]
+{"completed_context": 131072, "ttft_s": 74.76669434458017, "bytes": 1656048772}
+{"output": "docs/results/followup-long.json", "scenario": "long", "completed": true, "passed": true}
