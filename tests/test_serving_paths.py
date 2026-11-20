@@ -43,6 +43,11 @@ class ServingPaths(unittest.TestCase):
                 Coordinator(path, backend='hf', device='cuda', profile={'decode_graphs': True})
             with self.assertRaisesRegex(ValueError, 'same decode graph mode'):
                 Coordinator(path, backend='hf', device='cuda', profile={}, decode_graphs=True)
+            with self.assertRaisesRegex(ValueError, 'requires decode graphs'):
+                Coordinator(path, reserve_decode_kv=True)
+            with self.assertRaisesRegex(ValueError, 'KV allocation'):
+                Coordinator(path, backend='hf', device='cuda', decode_graphs=True,
+                            reserve_decode_kv=True, profile={'decode_graphs': True})
             ready = Coordinator(path, backend='hf', device='cuda', decode_graphs=True,
                                 profile={'measurements': {'decode_graphs': True}})
             self.assertTrue(ready.config['decode_graphs'])

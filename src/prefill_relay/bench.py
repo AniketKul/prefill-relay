@@ -90,6 +90,7 @@ def main():
     parser.add_argument('--remote-cache-dir')
     parser.add_argument('--remote-profile',type=Path,help='prefill timings for the remote hardware')
     parser.add_argument('--local-rdma',action='store_true',help='use host-memory RDMA for local handoff; set PREFILL_RELAY_RDMA_ADDRESS to the local interface IPv4')
+    parser.add_argument('--reserve-decode-kv', action='store_true', help='reserve full-attention KV space once per graphed continuation')
     parser.add_argument('--decode-graphs', action='store_true', help='use CUDA graphs for feed-forward layers during trained decode')
     parser.add_argument('--calibrate-tps', type=float, help='cap decode batches to the largest profiled size meeting this per-sequence rate at every profile length')
     parser.add_argument('--remote-workers',type=int,default=1)
@@ -110,7 +111,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix='prefill-relay-') as cache, Coordinator(cache,
             remote_host=args.remote_host,remote_project=args.remote_project,remote_device=args.remote_device,ssh_streams=args.ssh_streams,
             remote_cache_dir=args.remote_cache_dir,remote_profile=json.loads(args.remote_profile.read_text()) if args.remote_profile else None,
-            local_rdma_address=local_rdma_address,decode_graphs=args.decode_graphs,decode_slo_tps=args.calibrate_tps,backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
+            local_rdma_address=local_rdma_address,decode_graphs=args.decode_graphs,reserve_decode_kv=args.reserve_decode_kv,decode_slo_tps=args.calibrate_tps,backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
             bandwidth_bytes_s=bandwidth,profile=profile,output_tokens=args.output_tokens,
             cache_bytes=int(args.cache_gib*2**30),remote_workers=args.remote_workers,batch_wait_s=.02 if args.scenario=='validate' else .005,block_tokens=args.block_tokens) as service:
         result={'kind':('physical SSH prefill host with local decoding' if args.remote_host else 'independent model processes on one host with application-rate emulation'),

@@ -39,7 +39,7 @@ class ModelWorker:
         self.token=config['token']; self.role=config['role']; self.pending={}; self.lock=threading.RLock()
         self.decode_graphs = config.get('decode_graphs', False)
         if self.decode_graphs:
-            self.backend.enable_decode_graphs()
+            self.backend.enable_decode_graphs(reserve_kv=config.get('reserve_decode_kv', False))
         model=self.backend
         identity=getattr(model,'identity',getattr(getattr(model,'model',None),'config',None))
         namespace=hashlib.sha256(model.encode({'identity':identity})).hexdigest()
