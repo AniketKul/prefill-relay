@@ -39,6 +39,10 @@ The optimized service used the same arrivals, prompts, output length, link budge
 
 Both remote policies again chose the same placement for these three prompts. The eager and reserved-KV configurations used different calibrated batch caps. These measurements do not isolate the effect of the decode kernel.
 
+## One request in flight
+
+Each policy served one 1,024-token prompt and generated 1,024 output tokens with the same calibrated decoder. The three continuations matched exactly. All-local sustained 41.47 decode tokens/s, all-remote 41.18 and selective 41.95. These are measured per-request decode rates after the first token. The different prompt lengths and arrival concurrency in the long-generation benchmark prevent attributing the difference to concurrency alone. [Raw measurements](results/followup-combined-single.json) · [Tested source and invocation](results/followup-combined-single-receipt.json)
+
 ## Arrival workloads with the calibrated decoder
 
 All 180 requests completed. Each scenario ran 12 identical prompts per policy and generated eight tokens per request. The three policies produced the same output for every matched input. Nineteen requests sustained at least 40 decode tokens/s, including 12 complete-cache-hit requests in the warm scenario. [Per-request measurements](results/followup-combined-suite.json) · [Source and command](results/followup-combined-suite-receipt.json)
