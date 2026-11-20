@@ -43,7 +43,7 @@ The directory is not a replicated ownership log. Restart requires node registrat
 
 ## Transfer and bandwidth
 
-Layer payloads are split into bounded chunks and submitted across a configurable number of TCP connections. Checksums, explicit acknowledgements, bounded outstanding sends, receiver byte limits, idempotent frame retries and aborted-request cleanup protect the handoff. A frame acknowledgement confirms that frame, not distributed exactly-once execution.
+Each transfer streams bounded layer chunks across up to the configured number of TCP connections. A sender thread reuses its socket for successive frames until the request ends or a connection error forces it to reconnect. The sender retries unacknowledged frames, and the receiver checks duplicates before admitting them. Sender statistics include the number of sockets opened and frames acknowledged. During placement, the scheduler samples active remote sends for progress, retry counts and per-socket retransmission deltas. Checksums, explicit acknowledgements, bounded outstanding sends, receiver byte limits, idempotent frame retries and aborted-request cleanup protect the handoff. A frame acknowledgement confirms that frame, not distributed exactly-once execution.
 
 `RateService` shares a monotonic reservation clock across independent processes. Remote tensor frames and cross-cluster cache deltas reserve bytes before sending. This prevents every sender from independently claiming the full configured bandwidth while allowing producers to compute concurrently. Changes affect new reservations; previously allocated slots retain their deadlines.
 

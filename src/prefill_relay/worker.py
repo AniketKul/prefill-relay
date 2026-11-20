@@ -54,6 +54,7 @@ class ModelWorker:
             self.rdma_receiver = stack.enter_context(Receiver(
                 host=config['local_rdma_address'], server_class=RDMAServer,
                 max_bytes=config.get('receive_bytes',4*2**30), timeout=120))
+        self.egress_sender = None
         self.connections=config.get('connections',4)
         from .batch_decode import BatchDecoder
         self.batcher=BatchDecoder(self.backend,self.lock,max_batch=config.get('max_batch',4),wait_s=config.get('batch_wait_s',.005))
@@ -71,6 +72,9 @@ class ModelWorker:
                 rdma_receiver=list(self.rdma_receiver.address) if self.rdma_receiver else None,
                 receiver=list(self.receiver.address),vocab_size=backend.vocab_size,
                 model_id=backend.model_id,revision=backend.revision,kernels=getattr(backend,'kernel_provenance',{}),pid=__import__('os').getpid())
+        if op=='link':
+            sender = self.egress_sender
+            return sender.snapshot() if sender is not None else {}
         if op=='decode':
             with self.lock:
                 if self.role!='decode': raise RuntimeError('worker is not a decoder')
@@ -111,8 +115,11 @@ class ModelWorker:
                 if data.get('rdma'):
                     from .rdma import connect
                     connector = connect
-                with StreamSender(tuple(data['destination']),data['request'],min(self.connections,self.pool.capacity_blocks),pool=self.pool,
+                with ExitStack() as sending, StreamSender(tuple(data['destination']),data['request'],min(self.connections,self.pool.capacity_blocks),pool=self.pool,
                         timeout=120,connect=connector,rate_limiter=self.rate_limiter if data.get('rate_limit') else None) as sender:
+                    if data.get('rate_limit'):
+                        self.egress_sender = sender
+                        sending.callback(setattr, self, 'egress_sender', None)
                     def on_layer(i,layer):
                         ready.append(time.perf_counter())
                         sender.submit_blob(str(i),backend.encode(backend.delta(layer,data['destination_prefix'])),

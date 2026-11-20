@@ -15,21 +15,24 @@ class LinkMonitor:
         with self.lock:
             self.events.append((time.monotonic(),dict(stats)))
 
-    def snapshot(self,queue_depth=0):
+    def snapshot(self,queue_depth=0,in_flight=()):
         count(queue_depth,'queue depth'); now=time.monotonic()
         with self.lock:
             while self.events and now-self.events[0][0]>self.window: self.events.popleft()
             rows=[s for _,s in self.events]
+            completed = {s['request'] for s in rows if 'request' in s}
+            rows.extend(s for s in in_flight if s and s.get('request') not in completed)
             volume=sum(s.get('bytes',0) for s in rows)
             elapsed=sum(s.get('elapsed_s',0) for s in rows)
             failures=sum(s.get('failures',0) for s in rows)
+            retries=sum(s.get('retries',0) for s in rows)
             retrans=sum(s.get('retransmissions',0) for s in rows)
             observed=volume/elapsed if elapsed>0 else self.capacity
             span=max([now-self.events[0][0] if self.events else 0,*[s.get('elapsed_s',0) for s in rows],1e-6])
             utilization=min(1.,volume/span/self.capacity) if self.capacity else 1.
-            effective=min(self.capacity,observed/(1+failures+retrans)) if failures or retrans else self.capacity
+            effective=min(self.capacity,observed/(1+failures+retrans+retries)) if failures or retrans or retries else self.capacity
             return dict(bandwidth_bytes_s=effective,utilization=utilization,queue_depth=queue_depth,
-                        goodput_bytes_s=observed,failures=failures,retransmissions=retrans,
+                        goodput_bytes_s=observed,failures=failures,retries=retries,retransmissions=retrans,
                         rtt_ms=max((s.get('rtt_ms',0) for s in rows),default=0))
 
 

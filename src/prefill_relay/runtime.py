@@ -117,7 +117,9 @@ class Coordinator:
         local=self.directory.best('local',self.namespace,tokens)
         remote=self.directory.best('remote',self.namespace,tokens)
         egress_queue=self.rate.stats()['pending_reservations']
-        stats=self.monitor.snapshot(egress_queue)
+        in_flight = [worker.call('link') for name, worker in self.workers.items()
+                     if name.startswith('remote') and self.locks[name].locked()]
+        stats=self.monitor.snapshot(egress_queue, in_flight=in_flight)
         if policy=='all-local':
             self.roles.reallocate(1); router=Router(len(tokens),False,True); abundant=False
         elif policy=='all-remote':

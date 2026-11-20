@@ -33,6 +33,14 @@ class TelemetryTests(unittest.TestCase):
             monitor.record({'bytes':100,'elapsed_s':1,'failures':1,'retransmissions':1})
             self.assertLess(monitor.snapshot()['bandwidth_bytes_s'],1000)
 
+    def test_loss_feedback_is_visible_while_request_is_in_flight(self):
+        monitor = LinkMonitor(1000)
+        active = {'request': 'sample', 'bytes': 400, 'elapsed_s': 1., 'retransmissions': 2, 'retries': 1}
+        self.assertEqual(monitor.snapshot(in_flight=[active])['bandwidth_bytes_s'], 100)
+        self.assertEqual(monitor.snapshot()['retransmissions'], 0)
+        monitor.record(active)
+        self.assertEqual(monitor.snapshot(in_flight=[active])['retransmissions'], 2)
+
     def test_missing_chunks_rejected(self):
         with self.assertRaises(ValueError): assemble_chunks({'a:0:2':b'x'})
         with self.assertRaises(ValueError): assemble_chunks({'a:0:1':b'x','a:0:2':b'y'})

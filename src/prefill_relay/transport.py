@@ -37,7 +37,7 @@ def tcp_metrics(sock):
         info=sock.getsockopt(socket.IPPROTO_TCP,socket.TCP_INFO,104)
         return {'tcp_info_available':True,'rtt_ms':struct.unpack_from('=I',info,68)[0]/1000,
                 'retransmissions':struct.unpack_from('=I',info,100)[0]}
-    except OSError:
+    except (OSError, AttributeError, struct.error):
         return {'tcp_info_available':False,'rtt_ms':0.,'retransmissions':0}
 
 
@@ -60,19 +60,23 @@ def assemble_chunks(frames):
     return complete
 
 
-def send_frame(address,request,layer,payload,timeout=10):
-    _name(request); _name(layer); positive(timeout,'timeout')
+def _write_frame(sock, request, layer, payload):
+    _name(request); _name(layer)
     if not isinstance(payload,bytes) or not 0<len(payload)<=MAX_FRAME: raise ValueError('invalid payload size')
     header=json.dumps(dict(request=request,layer=layer,size=len(payload),sha256=hashlib.sha256(payload).hexdigest()),separators=(',',':')).encode()
     if len(header)>MAX_HEADER: raise ValueError('header too large')
+    sock.sendall(struct.pack('!I',len(header))+header)
+    started=time.perf_counter()
+    sock.sendall(payload)
+    ack=_read(sock,3)
+    if ack!=b'ACK': raise RuntimeError('receiver rejected transfer')
+    return {**tcp_metrics(sock),'send_started_at':started}
+
+
+def send_frame(address,request,layer,payload,timeout=10):
+    positive(timeout,'timeout')
     with socket.create_connection(address,timeout=timeout) as sock:
-        sock.settimeout(timeout)
-        sock.sendall(struct.pack('!I',len(header))+header)
-        started=time.perf_counter()
-        sock.sendall(payload)
-        ack=_read(sock,3)
-        if ack!=b'ACK': raise RuntimeError('receiver rejected transfer')
-        return {**tcp_metrics(sock),'send_started_at':started}
+        return _write_frame(sock, request, layer, payload)
 
 
 class _Server(socketserver.ThreadingTCPServer):
@@ -84,9 +88,25 @@ class _Handler(socketserver.BaseRequestHandler):
     def handle(self):
         owner=self.server.owner; sock=self.request
         sock.settimeout(owner.timeout)
+        with owner.lock:
+            if owner.stopping:
+                return
+            owner.peers.add(sock)
+        try:
+            while True:
+                try:
+                    size = _read(sock, 4)
+                except OSError:
+                    return
+                if not self.receive_frame(owner, sock, struct.unpack('!I', size)[0]):
+                    return
+        finally:
+            with owner.lock:
+                owner.peers.discard(sock)
+
+    def receive_frame(self, owner, sock, n):
         reserved=0; registered=None
         try:
-            n=struct.unpack('!I',_read(sock,4))[0]
             if not 0<n<=MAX_HEADER: raise ValueError('invalid header length')
             header=json.loads(_read(sock,n))
             if not isinstance(header,dict) or set(header)!={'request','layer','size','sha256'}: raise ValueError('invalid header')
@@ -119,9 +139,11 @@ class _Handler(socketserver.BaseRequestHandler):
                         owner.frames[request][layer]=payload; owner.buffered_bytes+=size
                     owner.pending_bytes-=reserved; reserved=0
             sock.sendall(b'ACK')
+            return True
         except (OSError,ValueError,TypeError,KeyError,MemoryError):
             try: sock.sendall(b'ERR')
             except OSError: pass
+            return False
         finally:
             with owner.lock:
                 if reserved: owner.pending_bytes-=reserved
@@ -132,12 +154,14 @@ class _Handler(socketserver.BaseRequestHandler):
 
 class Receiver:
     """Reference trusted-network receiver. Default binding is loopback only."""
-    def __init__(self,host='127.0.0.1',port=0,max_bytes=128*1024*1024,timeout=10):
+    def __init__(self,host='127.0.0.1',port=0,max_bytes=128*1024*1024,timeout=10,server_class=None):
         count(max_bytes,'max bytes',zero=False); positive(timeout,'timeout')
         self.max_bytes=max_bytes; self.timeout=timeout; self.frames={}
         self.buffered_bytes=0; self.pending_bytes=0; self.lock=threading.RLock()
         self.aborted=OrderedDict(); self.active={}
-        self.server=_Server((host,port),_Handler); self.server.owner=self
+        self.peers = set()
+        self.stopping = False
+        self.server=(server_class or _Server)((host,port),_Handler); self.server.owner=self
         self.address=self.server.server_address
         self.thread=threading.Thread(target=self.server.serve_forever,kwargs={'poll_interval':.05},daemon=True)
 
@@ -166,20 +190,32 @@ class Receiver:
             self.buffered_bytes-=sum(map(len,frames.values()))
 
     def __exit__(self,*exc):
-        self.server.shutdown(); self.server.server_close(); self.thread.join()
+        self.server.shutdown()
+        with self.lock:
+            self.stopping = True
+            peers = tuple(self.peers)
+        for sock in peers:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+        self.server.server_close()
+        self.thread.join()
 
 
 class StreamSender:
     """Submit layers as computed, bounded to one outstanding frame per connection."""
-    def __init__(self,address,request,connections=4,pool=None,timeout=10,retries=2,bandwidth_bytes_s=None,rate_limiter=None):
+    def __init__(self,address,request,connections=4,pool=None,timeout=10,retries=2,bandwidth_bytes_s=None,rate_limiter=None,connect=None):
         count(connections,'connections',zero=False); positive(timeout,'timeout'); _name(request)
         count(retries,'retries'); self.retries=retries
         if bandwidth_bytes_s is not None: positive(bandwidth_bytes_s,'bandwidth')
         self.rate_limiter=rate_limiter; self.bandwidth=bandwidth_bytes_s; self.next_send=time.monotonic(); self.rate_lock=threading.Lock()
         self.address=address; self.request=request; self.pool=pool; self.timeout=timeout
+        self.connect = connect or self._connect_tcp
+        self.connections = {}
         self.executor=ThreadPoolExecutor(max_workers=connections)
         self.slots=threading.Semaphore(connections); self.lock=threading.Lock(); self.futures=[]
-        self.stats={'bytes':0,'failures':0,'queue_depth':0,'elapsed_s':0.,'retries':0,'retransmissions':0,'rtt_ms':0.,'tcp_info_available':False,'first_send_at':None,'max_queue_depth':0}
+        self.stats={'request':request,'bytes':0,'failures':0,'queue_depth':0,'elapsed_s':0.,'retries':0,'retransmissions':0,'rtt_ms':0.,'tcp_info_available':False,'first_send_at':None,'max_queue_depth':0,'connections_opened':0,'frames_acked':0}
         self.start=time.perf_counter()
 
     def __enter__(self): return self
@@ -206,6 +242,40 @@ class StreamSender:
         if not total: raise ValueError('empty blob')
         for index in range(total): self.submit(f'{layer}:{index}:{total}',payload[index*chunk_bytes:(index+1)*chunk_bytes])
 
+    @staticmethod
+    def _connect_tcp(address, timeout):
+        sock = socket.create_connection(address, timeout=timeout)
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError:
+            sock.close()
+            raise
+        return sock
+
+    def snapshot(self):
+        with self.lock:
+            return {**self.stats, 'elapsed_s': time.perf_counter() - self.start}
+
+    def _write(self, layer, payload):
+        lane = threading.get_ident()
+        sock, previous_retrans = self.connections.get(lane, (None, 0))
+        if sock is None:
+            sock = self.connect(self.address, timeout=self.timeout)
+            self.connections[lane] = (sock, 0)
+            with self.lock:
+                self.stats['connections_opened'] += 1
+        try:
+            metrics = _write_frame(sock, self.request, layer, payload)
+        except BaseException:
+            self.connections.pop(lane)
+            sock.close()
+            raise
+        # Linux reports cumulative retransmissions for each TCP socket.
+        total = metrics['retransmissions']
+        metrics['retransmissions'] = max(0, total - previous_retrans)
+        self.connections[lane] = (sock, total)
+        return metrics
+
     def _send(self,layer,payload,handle):
         try:
             if self.bandwidth:
@@ -216,7 +286,7 @@ class StreamSender:
             for attempt in range(self.retries+1):
                 try:
                     if self.rate_limiter: self.rate_limiter(len(payload))
-                    metrics=send_frame(self.address,self.request,layer,payload,self.timeout)
+                    metrics=self._write(layer, payload)
                     break
                 except (OSError,ConnectionError):
                     if attempt==self.retries: raise
@@ -226,6 +296,7 @@ class StreamSender:
                 when=metrics['send_started_at']
                 self.stats['first_send_at']=min(self.stats['first_send_at'] or when,when)
                 self.stats['retransmissions']+=metrics['retransmissions']
+                self.stats['frames_acked'] += 1
                 self.stats['rtt_ms']=max(self.stats['rtt_ms'],metrics['rtt_ms'])
                 self.stats['tcp_info_available']|=metrics['tcp_info_available']
             if handle is not None: self.pool.complete_transfer(handle,acknowledged=True)
@@ -240,6 +311,9 @@ class StreamSender:
 
     def __exit__(self,exc_type,*rest):
         self.executor.shutdown(wait=True,cancel_futures=False)
+        for sock, _ in self.connections.values():
+            sock.close()
+        self.connections.clear()
         self.stats['elapsed_s']=time.perf_counter()-self.start
         if exc_type is None:
             for future in self.futures:
