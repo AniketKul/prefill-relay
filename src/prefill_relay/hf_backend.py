@@ -173,8 +173,17 @@ class HFHybrid:
             on_layer(index, {**metadata, **self._layer(past, index, clone=True), 'last_logits': state['last_logits']})
         return logits, state
 
+    def enable_decode_graphs(self):
+        from .mlp_graphs import DecodeMLPGraphs
+        if getattr(self, '_decode_graphs', None) is None:
+            self._decode_graphs = DecodeMLPGraphs(self)
+
     def generate(self, state: State, output_tokens: int) -> Tensor:
         from .hf_decode import generate_continuation
+        graphs = getattr(self, '_decode_graphs', None)
+        if graphs is not None:
+            with graphs.enabled():
+                return generate_continuation(self, state, output_tokens)
         return generate_continuation(self, state, output_tokens)
 
     __call__ = forward

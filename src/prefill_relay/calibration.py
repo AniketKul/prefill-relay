@@ -43,7 +43,7 @@ def select_decode_batch(rows, required_lengths, min_tokens_s, max_batch=4):
                 required_lengths=lengths, min_tokens_s=min_tokens_s)
 
 
-def measure(profile_file, lengths, max_batch, steps, repeats):
+def measure(profile_file, lengths, max_batch, steps, repeats, decode_graphs=False):
     import torch
     from .hf_backend import HFHybrid
 
@@ -62,6 +62,8 @@ def measure(profile_file, lengths, max_batch, steps, repeats):
         raise ValueError('prefill profile and current model, device or kernels differ')
     if max(lengths) + steps > backend.max_context:
         raise ValueError('requested measurement exceeds model context window')
+    if decode_graphs:
+        backend.enable_decode_graphs()
     seed = backend.tokenizer('A reusable prefix reduces repeated computation. ', return_tensors='pt').input_ids[0]
     rows = []
     for length in lengths:
@@ -93,12 +95,15 @@ def measure(profile_file, lengths, max_batch, steps, repeats):
             print(json.dumps(row), flush=True)
             del state
         del single
+    files = ['calibration.py', 'hf_backend.py', 'hf_decode.py', 'hf_state.py']
+    if decode_graphs:
+        files.append('mlp_graphs.py')
     sources = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-               for name in ('calibration.py', 'hf_backend.py', 'hf_decode.py', 'hf_state.py')}
+               for name in files}
     return {'measurements': {**base, 'rows': rows, 'kind': 'prefill profile plus native decode batch calibration',
             'decode_method': 'warm synchronized native continuations; median seconds per generated step',
             'temperature': 'greedy', 'repeats': repeats, 'prefill_profile_sha256': hashlib.sha256(raw).hexdigest(),
-            'decode_context_lengths': lengths, 'source_sha256': sources}}
+            'decode_context_lengths': lengths, 'decode_graphs': decode_graphs, 'source_sha256': sources}}
 
 
 def main():
@@ -108,9 +113,10 @@ def main():
     parser.add_argument('--max-batch', type=int, default=4)
     parser.add_argument('--steps', type=int, default=32)
     parser.add_argument('--repeats', type=int, default=3)
+    parser.add_argument('--decode-graphs', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    result = measure(args.profile, args.lengths, args.max_batch, args.steps, args.repeats)
+    result = measure(args.profile, args.lengths, args.max_batch, args.steps, args.repeats, args.decode_graphs)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
 
