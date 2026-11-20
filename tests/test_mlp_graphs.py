@@ -61,12 +61,14 @@ class TrainedMLPGraphTests(unittest.TestCase):
                 finally:
                     hook.remove()
             expected, eager = collect(lambda: generate_continuation(backend, state, 8))
-            actual, graphed = collect(lambda: backend.generate(state, 8))
-            self.assertTrue(torch.equal(expected, actual))
-            self.assertEqual(len(eager), 7)
-            self.assertEqual(len(graphed), 7)
-            for a, b in zip(eager, graphed):
-                torch.testing.assert_close(a, b, rtol=0, atol=0)
-            for key, source in before.items():
-                self.assertTrue(torch.equal(source, state[key]))
+            for reserve in (False, True):
+                backend.enable_decode_graphs(reserve_kv=reserve)
+                actual, graphed = collect(lambda: backend.generate(state, 8))
+                self.assertTrue(torch.equal(expected, actual))
+                self.assertEqual(len(eager), 7)
+                self.assertEqual(len(graphed), 7)
+                for a, b in zip(eager, graphed):
+                    torch.testing.assert_close(a, b, rtol=0, atol=0)
+                for key, source in before.items():
+                    self.assertTrue(torch.equal(source, state[key]))
         self.assertEqual(len(backend._decode_graphs.graphs), 24 * 4)

@@ -1,5 +1,6 @@
 """Native cache ownership tests, plus optional trained generation comparisons."""
 import os
+from importlib.util import find_spec
 from types import SimpleNamespace
 import unittest
 
@@ -105,6 +106,27 @@ class NativeDecodeTests(unittest.TestCase):
             backend.model.invalid_output = kind
             with self.assertRaises(ValueError):
                 generate_continuation(backend, fake_state(1), 2)
+
+
+@unittest.skipUnless(torch is not None and find_spec('transformers'), 'requires trained extra')
+class DecodeLayerTests(unittest.TestCase):
+    def test_in_place_append_preserves_mask_length_and_source(self):
+        from prefill_relay.hf_decode_layer import DecodeLayer
+        prefix = torch.arange(120.).reshape(2, 3, 5, 4)
+        layer = DecodeLayer(prefix, prefix + 1, 3)
+        pointer = layer.keys.untyped_storage().data_ptr()
+        expected = prefix.clone()
+        for steps in (1, 2):
+            added = torch.zeros(2, 3, steps, 4)
+            keys, values = layer.update(added, added + 1)
+            expected = torch.cat([expected, added], dim=-2)
+            self.assertTrue(torch.equal(keys, expected))
+            self.assertTrue(torch.equal(values, expected + 1))
+            self.assertEqual(keys.untyped_storage().data_ptr(), pointer)
+            self.assertEqual(layer.get_mask_sizes(1), (expected.shape[-2] + 1, 0))
+        with self.assertRaisesRegex(ValueError, 'capacity exceeded'):
+            layer.update(added, added)
+        self.assertTrue(torch.equal(prefix, torch.arange(120.).reshape_as(prefix)))
 
 
 @unittest.skipUnless(torch is not None and os.environ.get('PREFILL_RELAY_TRAINED_MODEL'),

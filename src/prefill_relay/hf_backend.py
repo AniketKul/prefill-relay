@@ -80,7 +80,7 @@ class HFHybrid:
             result[f'layer.{index}.{name}'] = value.clone() if clone else value
         return result
 
-    def _restore(self, state: State | None, batch: int):
+    def _restore(self, state: State | None, batch: int, decode_steps: int = 0):
         from transformers import DynamicCache
 
         cache = DynamicCache(config=self.config)
@@ -104,7 +104,11 @@ class HFHybrid:
                 shape = (batch, self.config.num_key_value_heads, total, self.config.head_dim)
                 if any(tuple(v.shape) != shape or v.dtype != self.model.dtype for v in values):
                     raise ValueError('invalid full-attention cache shape or dtype')
-                cache.update(values[0].clone(), values[1].clone(), i)
+                if decode_steps:
+                    from .hf_decode_layer import DecodeLayer
+                    cache.layers[i] = DecodeLayer(values[0], values[1], decode_steps)
+                else:
+                    cache.update(values[0].clone(), values[1].clone(), i)
             else:
                 cfg = self.config
                 channels = 2 * cfg.linear_num_key_heads * cfg.linear_key_head_dim + cfg.linear_num_value_heads * cfg.linear_value_head_dim
@@ -173,17 +177,18 @@ class HFHybrid:
             on_layer(index, {**metadata, **self._layer(past, index, clone=True), 'last_logits': state['last_logits']})
         return logits, state
 
-    def enable_decode_graphs(self):
+    def enable_decode_graphs(self, *, reserve_kv: bool = False):
         from .mlp_graphs import DecodeMLPGraphs
         if getattr(self, '_decode_graphs', None) is None:
             self._decode_graphs = DecodeMLPGraphs(self)
+        self._reserve_decode_kv = reserve_kv
 
     def generate(self, state: State, output_tokens: int) -> Tensor:
         from .hf_decode import generate_continuation
         graphs = getattr(self, '_decode_graphs', None)
         if graphs is not None:
             with graphs.enabled():
-                return generate_continuation(self, state, output_tokens)
+                return generate_continuation(self, state, output_tokens, reserve=self._reserve_decode_kv)
         return generate_continuation(self, state, output_tokens)
 
     __call__ = forward

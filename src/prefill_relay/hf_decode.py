@@ -17,7 +17,7 @@ def _logits(value, expected_shape, device):
 
 
 @torch.inference_mode()
-def generate_continuation(backend, state: State, output_tokens: int) -> Tensor:
+def generate_continuation(backend, state: State, output_tokens: int, *, reserve: bool = False) -> Tensor:
     """Return greedy tokens as ``[batch, output_tokens]`` without changing state.
 
     The first token comes from cached final logits. The remaining tokens require
@@ -41,7 +41,7 @@ def generate_continuation(backend, state: State, output_tokens: int) -> Tensor:
     shape = (1, backend.vocab_size) if tokens.ndim == 1 else (batch, 1, backend.vocab_size)
     cached = _logits(state.get('last_logits'), shape, backend.device)
     logits = cached if tokens.ndim == 1 else cached[:, -1]
-    past = backend._restore(state, batch)
+    past = backend._restore(state, batch, output_tokens - 1) if reserve else backend._restore(state, batch)
     generated = torch.empty((batch, output_tokens), dtype=torch.int64, device=backend.device)
     for index in range(output_tokens):
         token = logits.argmax(dim=-1)
