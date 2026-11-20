@@ -12,6 +12,7 @@ from .analytics import Profile, count, positive
 from .empirical import EmpiricalWorkload
 from .scheduler import Controller, Router
 from .telemetry import LinkMonitor, RolePool
+from .stage_load import StageLoad
 from .worker import WorkerProcess
 
 
@@ -88,8 +89,14 @@ class Coordinator:
             namespaces={w.info['namespace'] for w in self.workers.values()}
             if len(namespaces)!=1: raise ValueError('worker model identities differ')
             self.namespace=namespaces.pop()
-            self.roles=RolePool({n:w.info['role'] for n,w in self.workers.items() if n.startswith('local')},
-                                lambda n,r:self.workers[n].call('role',role=r))
+            initial_roles = {n: w.info['role'] for n, w in self.workers.items() if n.startswith('local')}
+            self.stages = StageLoad({n: ('remote_prefill' if n.startswith('remote') else
+                                         'local_prefill' if initial_roles[n] == 'prefill' else 'decode')
+                                     for n in self.workers})
+            def apply_role(node, role):
+                self.workers[node].call('role', role=role)
+                self.stages.role(node, 'local_prefill' if role == 'prefill' else 'decode')
+            self.roles=RolePool(initial_roles, apply_role)
             if self.profile is not None:
                 raw=self.profile['measurements'] if 'measurements' in self.profile else self.profile
                 first=next(iter(self.workers.values())).info
@@ -130,6 +137,7 @@ class Coordinator:
             if any(lock.locked() for lock in self.locks.values()) or any(self.roles.active.values()): raise RuntimeError('requests still active')
             for worker in self.workers.values(): worker.call('clear')
             self.observations.clear(); self.monitor.events.clear()
+            self.stages.snapshot(reset=True)
             if self.controller:
                 self.controller.current=None; self.controller.last_long=None; self.controller.last_time=None
 
@@ -157,8 +165,12 @@ class Coordinator:
             uncached=len(tokens)-(max(local[1],remote[1]) if abundant else local[1])
             if self.controller:
                 samples=EmpiricalWorkload(self.observations or [uncached],low=self.measured.lengths[0],high=self.measured.lengths[-1])
+                last_long = self.controller.last_long
                 current=self.controller.update(time.monotonic(),stats['bandwidth_bytes_s'],stats['utilization'],egress_queue,
-                                               workload=samples if samples.has_misses else None)
+                                               workload=samples if samples.has_misses else None,
+                                               stages=self.stages.snapshot())
+                if last_long != self.controller.last_long:
+                    self.stages.snapshot(reset=True)
                 self.roles.reallocate(current['prefill_instances']); router=self.controller.router
                 abundant=self.controller.bandwidth_abundant
             else:
@@ -182,12 +194,19 @@ class Coordinator:
                     producers=self.roles.available('prefill') if placement.target=='local' else [n for n in self.workers if n.startswith('remote')]
                     decoders.sort(key=lambda n:(-self.directory._client(('local',n),self.namespace).match_length(tokens),n))
                     producers.sort(key=lambda n:(n!=hits[placement.target][0],n))
-                    pair=next(((p,d) for p in producers for d in decoders if not self.locks[p].locked() and self.roles.active[d]<self.config['max_batch']),None)
-                    if pair:
-                        producer,decoder=pair
+                    producer = next((p for p in producers if not self.locks[p].locked()), None)
+                    decoder = next((d for d in decoders if self.roles.active[d] < self.config['max_batch']), None)
+                    blocked = []
+                    if producer is None:
+                        blocked.append(placement.target + '_prefill')
+                    if decoder is None:
+                        blocked.append('decode')
+                    self.stages.waiting(request, blocked)
+                    if not blocked:
                         self.locks[producer].acquire(); acquired.append(producer)
                         roles.enter_context(self.roles.acquire(decoder,'decode'))
                         if placement.target=='local': production.enter_context(self.roles.acquire(producer,'prefill'))
+                        production.enter_context(self.stages.working(producer))
                         break
                 time.sleep(.01)
             with roles:
@@ -221,7 +240,7 @@ class Coordinator:
                     self.locks[producer].release(); acquired.remove(producer)
                 self.workers[decoder].call('consume',rdma=rdma,request=request,first_token=pref['first_token'])
                 ttft=time.perf_counter()-start
-                decoded=self.workers[decoder].call('decode',request=request,output_tokens=output_tokens)
+                decoded=self._decode(decoder,request,output_tokens)
                 return dict(ttft_s=ttft,total_s=time.perf_counter()-start,decode_s=decoded['decode_s']+decoded['batch_queue_s'],
                     batch_size=decoded['batch_size'],batch_queue_s=decoded['batch_queue_s'],
                     generated_tokens=decoded['generated_tokens'],transferred_bytes=moved,target=placement.target,
@@ -232,6 +251,7 @@ class Coordinator:
             if getattr(error,'transport_stats',None): self.monitor.record(error.transport_stats)
             raise
         finally:
+            self.stages.waiting(request)
             production.close()
             for n in acquired:
                 try: self.workers[n].call('discard',request=request)
@@ -273,7 +293,7 @@ class Coordinator:
             if prepared['prefix_tokens']!=len(tokens): return None
             self.workers[node].call('consume_cached',request=request,length=len(tokens))
             ttft=time.perf_counter()-start
-            decoded=self.workers[node].call('decode',request=request,output_tokens=output_tokens)
+            decoded=self._decode(node,request,output_tokens)
             with self.control_lock: self.observations.append(0)
             return dict(ttft_s=ttft,total_s=time.perf_counter()-start,
                 decode_s=decoded['decode_s']+decoded['batch_queue_s'],batch_size=decoded['batch_size'],
@@ -285,6 +305,10 @@ class Coordinator:
     def _finish_replication(self, node):
         with self.control_lock:
             self.replications.discard(node)
+
+    def _decode(self,node,request,output_tokens):
+        with self.stages.working(node):
+            return self.workers[node].call('decode',request=request,output_tokens=output_tokens)
 
     def _discard(self,node,request):
         try: self.workers[node].call('discard',request=request)
@@ -322,4 +346,4 @@ class Coordinator:
     def stats(self):
         return {'decode_calibration':self.decode_calibration,'workers':{n:w.call('stats') for n,w in self.workers.items()},'roles':dict(self.roles.roles),
                 'role_history':self.roles.history,'telemetry':self.monitor.snapshot(self.rate.stats()['pending_reservations']),'rate':self.rate.stats(),
-                'outstanding_requests':self.queue,'migrations':self.receipts}
+                'stage_load':self.stages.snapshot(),'outstanding_requests':self.queue,'migrations':self.receipts}

@@ -48,7 +48,7 @@ class Controller:
         self.last_long=None; self.last_time=None; self.current=None; self.bandwidth_abundant=True
         self.bandwidth=bandwidth_bytes_s
 
-    def update(self,now,bandwidth_bytes_s,utilization,queue_depth,workload=None):
+    def update(self,now,bandwidth_bytes_s,utilization,queue_depth,workload=None,stages=None):
         positive(now,'time',zero=True); positive(bandwidth_bytes_s,'bandwidth',zero=True)
         positive(utilization,'utilization',zero=True); count(queue_depth,'queue depth')
         if utilization>1: raise ValueError('utilization must be <=1')
@@ -65,8 +65,24 @@ class Controller:
         self.bandwidth_abundant=abundant; self.bandwidth=bandwidth_bytes_s
         if long_due or changed or not abundant:
             counts=None if long_due else [self.current['prefill_instances']]
+            adjustment = None
+            if long_due and self.current and stages and bandwidth_bytes_s:
+                decode = stages['decode']
+                prefill = [stages['local_prefill'], stages['remote_prefill']]
+                def congested(stage):
+                    return stage['mean_queue'] >= .5 and stage['utilization'] >= self.utilization_trigger
+                active = stages['local_prefill']['instances']
+                if congested(decode) and active and not any(congested(s) for s in prefill):
+                    counts, adjustment = [active - 1], 'decode_queue'
+                elif (any(congested(s) for s in prefill) and decode['utilization'] < self.utilization_trigger
+                      and active + 1 < self.args[4]):
+                    counts, adjustment = [active + 1], 'prefill_queue'
             # shortcut: effective bandwidth is supplied by telemetry; deploy adapters must measure it.
             self.current,_=grid_search(*self.args,bandwidth_bytes_s,*self.decode,self.thresholds,prefill_counts=counts)
+            if adjustment and self.current['throughput'] == 0:
+                self.current,_=grid_search(*self.args,bandwidth_bytes_s,*self.decode,self.thresholds)
+            elif adjustment:
+                self.current['stage_adjustment'] = adjustment
             if long_due: self.last_long=now
         return self.current
 
