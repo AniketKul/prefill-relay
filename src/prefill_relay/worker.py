@@ -64,7 +64,7 @@ class ModelWorker:
         if str(self.backend.device).startswith('cuda'): self.torch.cuda.synchronize()
 
     def handle(self,data):
-        from .backend import restore_state, store_state
+        from .backend import restore_state, store_state, prefix_fingerprints, handoff_delta, merge_handoff
         from .transport import StreamSender, assemble_chunks
         op=data['operation']; backend=self.backend
         if op=='health':
@@ -103,7 +103,9 @@ class ModelWorker:
                 if request in self.pending: raise ValueError('duplicate request')
                 state=restore_state(self.pool,backend,tokens)
                 self.pending[request]=state
-                return {'prefix_tokens':0 if state is None else int(state['length'])}
+                length = 0 if state is None else int(state['length'])
+                return {'prefix_tokens':length, 'fingerprints': prefix_fingerprints(backend,state,length)
+                        if not data.get('cached_only') else {}}
             if op=='prefill':
                 if self.role!='prefill': raise RuntimeError('worker is not a prefill worker')
                 tokens=data['tokens']; self._tokens(tokens)
@@ -122,7 +124,7 @@ class ModelWorker:
                         sending.callback(setattr, self, 'egress_sender', None)
                     def on_layer(i,layer):
                         ready.append(time.perf_counter())
-                        sender.submit_blob(str(i),backend.encode(backend.delta(layer,data['destination_prefix'])),
+                        sender.submit_blob(str(i),backend.encode(handoff_delta(backend,layer,data['destination_prefix'],data.get('fingerprints',{}))),
                             chunk_bytes=min(4*2**20,max(1,self.pool.capacity_blocks*self.pool.block_bytes//min(self.connections,self.pool.capacity_blocks))))
                     if tensor.numel(): logits,state=backend.prefill(tensor,state,on_layer=on_layer)
                     else:
@@ -149,7 +151,7 @@ class ModelWorker:
                 if set(frames)!={str(i) for i in range(backend.layers)}: raise ValueError('incomplete layers')
                 change={}
                 for i in range(backend.layers): change.update(backend.decode(frames[str(i)]))
-                state=backend.merge(base,change)
+                state=merge_handoff(backend,base,change)
                 self.sync(); logits=state['last_logits']
                 if int(logits.reshape(-1,backend.vocab_size)[-1].argmax())!=data['first_token']:
                     raise ValueError('transferred logits do not match prefill token')

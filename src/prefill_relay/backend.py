@@ -73,3 +73,36 @@ def restore_state(pool,backend,tokens):
         state[key]=torch.cat([backend.decode(b)[key] for b in blocks],dim=backend.sequence_axis)
     if state['tokens'].tolist()!=tokens[:hit.length]: raise ValueError('cache token identity mismatch')
     return state
+
+
+def prefix_fingerprints(backend, state, length):
+    """Hash only full-attention bytes which the receiver would keep."""
+    import hashlib
+    if not length or state is None:
+        return {}
+    return {key: hashlib.sha256(backend.encode({key: value.narrow(
+                backend.sequence_axis, 0, length)})).hexdigest()
+            for key, value in state.items() if key.endswith(('.key', '.value'))}
+
+
+def handoff_delta(backend, layer, prefix, fingerprints):
+    change = backend.delta(layer, prefix)
+    for key, digest in prefix_fingerprints(backend, layer, prefix).items():
+        if fingerprints.get(key) != digest:
+            # Equal token IDs can produce different bf16 KV on a different prompt shape.
+            change['replacement.' + key] = layer[key].narrow(backend.sequence_axis, 0, prefix)
+    return change
+
+
+def merge_handoff(backend, base, change):
+    state = dict(base) if base is not None else None
+    for name in list(change):
+        if name.startswith('replacement.'):
+            key = name.removeprefix('replacement.')
+            if state is None or key not in state or not key.endswith(('.key', '.value')):
+                raise ValueError('unknown replacement tensor')
+            value = change.pop(name)
+            if value.shape != state[key].shape or value.dtype != state[key].dtype:
+                raise ValueError('incompatible replacement tensor')
+            state[key] = value
+    return backend.merge(state, change)

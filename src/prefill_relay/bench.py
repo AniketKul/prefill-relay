@@ -73,7 +73,7 @@ def main():
     parser.add_argument('--revision',default='main')
     parser.add_argument('--profile',type=Path)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--scenario',choices=['validate','migration','uniform','burst','skew','bandwidth','long','suite'],default='validate')
+    parser.add_argument('--scenario',choices=['validate','migration','uniform','burst','skew','bandwidth','long','lognormal','suite'],default='validate')
     parser.add_argument('--lengths',type=int,nargs='+',default=[64,256,1024])
     parser.add_argument('--requests',type=int,default=12)
     parser.add_argument('--output-tokens',type=int,default=8)
@@ -81,6 +81,7 @@ def main():
     parser.add_argument('--bandwidth-mib',type=float,default=100)
     parser.add_argument('--cache-gib',type=float,default=4)
     parser.add_argument('--block-tokens',type=int,default=16)
+    parser.add_argument('--seed',type=int,default=0,help='seed for sampled uncached lengths')
     parser.add_argument('--warm-rounds',type=int,default=0)
     parser.add_argument('--local-rdma',action='store_true',help='use host-memory RDMA for local handoff; set PREFILL_RELAY_RDMA_ADDRESS to the local interface IPv4')
     parser.add_argument('--calibrate-tps', type=float, help='cap decode batches to the largest profiled size meeting this per-sequence rate at every profile length')
@@ -120,8 +121,19 @@ def main():
                 print(json.dumps({'completed_context':len(tokens),'ttft_s':row['ttft_s'],'bytes':row['transferred_bytes']}),flush=True)
             result['long_context']=rows
         else:
-            service.warmup(prompts)
+            if args.scenario == 'lognormal':
+                from .analytics import Workload
+                lengths = [round(n) for n in Workload().sample(args.requests, args.seed)]
+                prompts = [(seed*((n+len(seed)-1)//len(seed)))[:n] for n in lengths]
+                result['sampled_lengths'] = lengths
+                result['length_distribution'] = dict(mu=9.90,sigma=1.,low=128,high=128000,seed=args.seed)
+                # Warm a representative shape; exact-shape compilation remains in request times.
+                service.warmup([seed])
+            else:
+                service.warmup(prompts)
             result['compute_warmup']='all workers, each full prompt shape, prefill and decode batches1/2/4; caches reset afterwards'
+            if args.scenario == 'lognormal':
+                result['compute_warmup'] = 'all workers, seed prompt only; measured lengths may include compilation'
             scenarios=['uniform','burst','skew','bandwidth','warm'] if args.scenario=='suite' else [args.scenario]
             runs={}
             for scenario in scenarios:

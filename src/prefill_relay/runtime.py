@@ -182,7 +182,7 @@ class Coordinator:
                 rdma = bool(self.config['local_rdma_address'] and placement.target=='local')
                 endpoint = 'rdma_receiver' if rdma else 'receiver'
                 pref=self.workers[producer].call('prefill',request=request,tokens=tokens,
-                    rdma=rdma,destination=self.workers[decoder].info[endpoint],destination_prefix=destination['prefix_tokens'],
+                    fingerprints=destination['fingerprints'],rdma=rdma,destination=self.workers[decoder].info[endpoint],destination_prefix=destination['prefix_tokens'],
                     rate_limit=placement.target=='remote')
                 with self.control_lock: self.observations.append(len(tokens)-pref['prefix_tokens'])
                 if placement.target=='remote':
@@ -242,7 +242,7 @@ class Coordinator:
                 if copy['length'] != len(tokens) or copy['status'] not in ('already_cached','transferred'):
                     return None
             reservation.callback(self._discard,node,request)
-            prepared=self.workers[node].call('prepare',request=request,tokens=tokens)
+            prepared=self.workers[node].call('prepare',request=request,tokens=tokens,cached_only=True)
             if prepared['prefix_tokens']!=len(tokens): return None
             self.workers[node].call('consume_cached',request=request,length=len(tokens))
             ttft=time.perf_counter()-start

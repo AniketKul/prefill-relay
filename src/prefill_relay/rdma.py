@@ -53,6 +53,9 @@ class RDMAStream:
             self.close()
             raise
 
+    def shutdown(self, how):
+        _check(self.api.rshutdown(self.fd, how))
+
     def close(self):
         if self.fd >= 0:
             self.api.rclose(self.fd)
@@ -134,6 +137,7 @@ class RDMAServer(socketserver.ThreadingMixIn, socketserver.BaseServer):
             api, fd = self.listener.api, self.listener.fd
             _check(api.rbind(fd, raw, len(raw)))
             _check(api.rlisten(fd, 16))
+            _check(api.rfcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK))
             actual, size = C.create_string_buffer(16), C.c_uint(16)
             _check(api.rgetsockname(fd, actual, C.byref(size)))
             self.server_address = (address[0], struct.unpack('!H', actual.raw[2:4])[0])
@@ -142,12 +146,18 @@ class RDMAServer(socketserver.ThreadingMixIn, socketserver.BaseServer):
             raise
 
     def serve_forever(self, poll_interval=.05):
+        self.running = threading.Event()
+        try:
+            self._serve(poll_interval)
+        finally:
+            self.running.set()
+
+    def _serve(self, poll_interval):
         while not self.closing.is_set():
-            if not self.listener.poll(select.POLLIN, time.monotonic() + poll_interval):
-                continue
             address, size = C.create_string_buffer(16), C.c_uint(16)
             fd = self.listener.api.raccept(self.listener.fd, address, C.byref(size))
             if fd < 0 and C.get_errno() in (errno.EAGAIN, errno.EINTR, errno.ECONNABORTED):
+                self.closing.wait(poll_interval)
                 continue
             peer = socket.inet_ntoa(address.raw[4:8])
             stream = RDMAStream(_check(fd))
@@ -161,6 +171,8 @@ class RDMAServer(socketserver.ThreadingMixIn, socketserver.BaseServer):
 
     def shutdown(self):
         self.closing.set()
+        if hasattr(self, 'running'):
+            self.running.wait()
 
     def server_close(self):
         self.closing.set()
