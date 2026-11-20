@@ -1,0 +1,9 @@
+{
+  "source_commit": "d5cfff27ad9c4ed34f89fb46a710488fce695f42",
+  "command": "uv build --no-sources",
+  "source_modules_verified_in_both_archives": 34,
+  "artifacts": {
+    "prefill_relay-0.1.0-py3-none-any.whl": "f1ec38da1c2bcf4da6565f9179c50f66b77afe9621b1298021188758a94bd506",
+    "prefill_relay-0.1.0.tar.gz": "57700d97305a905f633c98e995380d0bdd82a205e69fb0d40343d734c9edc0ca"
+  }
+}

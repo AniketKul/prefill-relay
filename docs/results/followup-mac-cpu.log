@@ -1,0 +1,139 @@
+warning: The `extra-build-dependencies` option is experimental and may change without warning. Pass `--preview-features extra-build-dependencies` to disable this warning.
+test_complete_hits_still_consume_decode_capacity (test_analytics.AnalyticsTests) ... ok
+test_equations_and_aggregate_bandwidth (test_analytics.AnalyticsTests) ... ok
+test_invalid_values_rejected (test_analytics.AnalyticsTests) ... ok
+test_search_is_global_best_on_supplied_grid (test_analytics.AnalyticsTests) ... ok
+test_truncated_distribution (test_analytics.AnalyticsTests) ... ok
+test_unused_stages_do_not_limit_capacity (test_analytics.AnalyticsTests) ... ok
+test_batch_failure_propagates_and_worker_recovers (test_batch_decode.BatchDecodeTests) ... ok
+test_bounded_queue_and_close_drain (test_batch_decode.BatchDecodeTests) ... ok
+test_compatible_requests_use_real_batch_shape (test_batch_decode.BatchDecodeTests) ... ok
+test_lengths_and_identity_do_not_mix (test_batch_decode.BatchDecodeTests) ... ok
+test_tiny_backend_falls_back_to_single_requests (test_batch_decode.BatchDecodeTests) ... ok
+test_abrupt_process_exit_recovers_committed_data_and_releases_orphan_pins (test_cache_service.CacheServiceTests) ... ok
+test_delta_migration_16_to_32_sends_missing_blocks_and_rates_only_cross_cluster (test_cache_service.CacheServiceTests) ... ok
+test_full_hit_requires_equal_full_and_recurrent_content (test_cache_service.CacheServiceTests) ... ok
+test_invalid_delta_reference_remains_a_protocol_error (test_cache_service.CacheServiceTests) ... ok
+test_listener_requires_authentication_off_loopback (test_cache_service.CacheServiceTests) ... ok
+test_live_directory_placement_migration_and_same_cluster_rebalance (test_cache_service.CacheServiceTests) ... ok
+test_partial_block_hash_mismatch_sends_new_bytes_and_bad_hashes_are_rejected (test_cache_service.CacheServiceTests) ... ok
+test_rate_limiter_failure_releases_local_staging_before_error_response (test_cache_service.CacheServiceTests) ... ok
+test_real_process_auth_namespace_bounds_and_roundtrip (test_cache_service.CacheServiceTests) ... ok
+test_receiver_capacity_failure_releases_sender_pins (test_cache_service.CacheServiceTests) ... ok
+test_target_evicted_or_replaced_after_advertising_blocks (test_cache_service.CacheServiceTests) ... ok
+test_budget_baselines_and_no_slo_feasible_output (test_capacity_study.CalibrationTests) ... ok
+test_heterogeneous_service_times_egress_and_baselines (test_capacity_study.CalibrationTests) ... ok
+test_link_serialization_out_of_order_and_decoder_queue (test_capacity_study.CalibrationTests) ... ok
+test_no_promotion_for_fast_incomplete_or_slow_batches (test_capacity_study.CalibrationTests) ... ok
+test_cache_requires_exact_recurrent_checkpoint (test_control.ControlTests) ... ok
+test_congestion_changes_cold_routing_with_constant_line_rate (test_control.ControlTests) ... ok
+test_controller_short_and_long_timescales (test_control.ControlTests) ... ok
+test_equal_capacity_prefers_lower_egress (test_control.ControlTests) ... ok
+test_infeasible_fixed_roles_recover_after_workload_change (test_control.ControlTests) ... ok
+test_lru_and_namespace (test_control.ControlTests) ... ok
+test_outage_reallocates_zero_prefill_immediately (test_control.ControlTests) ... ok
+test_pinned_transfer_shared_capacity_and_cleanup (test_control.ControlTests) ... ok
+test_routing_bandwidth_and_cache_branches (test_control.ControlTests) ... ok
+test_cross_host_cold_and_warm_match_unsplit_producer (test_cross_host_trained.TrainedHandoffTests) ... skipped 'requires an SSH producer and the trained Qwen3.5-0.8B checkpoint'
+test_end_to_end_paths (test_demo.DemoTests) ... ok
+test_example_search_includes_baselines (test_experiment.ExperimentTests) ... ok
+test_cross_site_handoff_affinity_outage_and_return_path (test_federation.FederationTests) ... ok
+test_profile_uses_the_selected_clusters (test_federation.FederationTests) ... ok
+test_trained_cross_site_reference_and_full_hit (test_federation.FederationTests) ... skipped 'enable trained federation validation explicitly'
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 6424.91it/s]
+test_invalid_inputs_and_foreign_state (test_hf_backend.TrainedBackendTests) ... [transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+ok
+test_trained_layer_stream_delta_prefix_full_hit_and_batched_handoff (test_hf_backend.TrainedBackendTests) ... [transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+ok
+test_in_place_append_preserves_mask_length_and_source (test_hf_decode.DecodeLayerTests) ... ok
+test_invalid_count_context_identity_and_logits (test_hf_decode.NativeDecodeTests) ... ok
+test_model_must_return_valid_logits_and_native_cache (test_hf_decode.NativeDecodeTests) ... ok
+test_one_token_uses_cached_logits_without_model_call (test_hf_decode.NativeDecodeTests) ... ok
+test_single_restore_reused_cache_and_immutable_checkpoint (test_hf_decode.NativeDecodeTests) ... ok
+Loading weights:   0%|          | 0/320 [00:00<?, ?it/s]Loading weights: 100%|██████████| 320/320 [00:00<00:00, 22849.07it/s]
+test_trained_tokens_every_step_logits_and_checkpoint_match (test_hf_decode.TrainedNativeDecodeTests) ... ok
+test_batched_delta_slices_all_attention_but_replaces_linear (test_hf_state.TrainedStateTests) ... ok
+test_checksum_and_byte_limit (test_hf_state.TrainedStateTests) ... ok
+test_codec_preserves_bf16_fp16_float32_and_zero_dimensions (test_hf_state.TrainedStateTests) ... ok
+test_empty_destination_and_full_hit (test_hf_state.TrainedStateTests) ... ok
+test_wrong_prefix_and_wrong_model_are_rejected (test_hf_state.TrainedStateTests) ... ok
+test_placement_sees_partial_transfer_before_prefill_returns (test_inflight_link.InFlightLinkTests) ... ok
+test_counts_full_and_bounded_state_with_mixed_dtypes (test_kv_profile.CacheSizeTests) ... ok
+test_cache_reuse_and_retained_outputs_across_streams (test_mlp_graphs.MLPGraphTests) ... skipped 'requires opt-in CUDA test device'
+test_batches_preserve_all_decode_logits_and_checkpoint (test_mlp_graphs.TrainedMLPGraphTests) ... skipped 'requires trained CUDA model'
+test_rejects_unexpected_forward_destinations (test_parallel_ssh.ParallelSSHTests) ... ok
+test_two_ssh_transports_carry_independent_streams (test_parallel_ssh.ParallelSSHTests) ... ok
+test_auth_and_input_bounds (test_rate_limit.RateLimitTests) ... ok
+test_bandwidth_change_keeps_existing_reservations (test_rate_limit.RateLimitTests) ... ok
+test_independent_producers_share_aggregate_clock (test_rate_limit.RateLimitTests) ... ok
+test_pending_queue_is_bounded_and_drains (test_rate_limit.RateLimitTests) ... ok
+test_waiting_clients_do_not_hold_server_lock (test_rate_limit.RateLimitTests) ... ok
+test_zero_bandwidth_fails_quickly_and_recovers (test_rate_limit.RateLimitTests) ... ok
+test_evicted_migration_base_falls_back_to_real_prefill (test_runtime.RuntimeTests) ... ok
+test_process_handoff_full_hit_migration_and_roles (test_runtime.RuntimeTests) ... ok
+test_profile_feedback_applies_outage_role_change (test_runtime.RuntimeTests) ... ok
+test_small_cache_admission_does_not_abort_generation (test_runtime.RuntimeTests) ... ok
+test_decode_cap_covers_every_batch_size_the_runtime_can_emit (test_serving_paths.ServingPaths) ... ok
+test_graph_mode_must_match_local_device_and_decode_profile (test_serving_paths.ServingPaths) ... ok
+test_local_rdma_and_remote_tcp_handoff (test_serving_paths.ServingPaths) ... skipped 'requires a local RDMA interface'
+test_same_tokens_different_kv_repairs_only_changed_prefix_tensor (test_serving_paths.ServingPaths) ... ok
+test_saturated_decoder_replicates_hot_checkpoint_to_idle_decoder (test_serving_paths.ServingPaths) ... ok
+test_real_remote_prefill_and_local_decode (test_ssh_worker.RemoteHandoffTests) ... skipped 'set PREFILL_RELAY_SSH_HOST to run the remote worker check'
+test_endpoint_and_host_validation (test_ssh_worker.SSHConfigurationTests) ... ok
+test_occupancy_batch_queue_and_role_changes (test_stage_load.StageLoadTests) ... ok
+test_only_sustained_long_interval_pressure_moves_roles (test_stage_load.StageLoadTests) ... ok
+test_branch_checkpoints_keep_numeric_variants_and_dedupe_identical_blocks (test_storage.StorageTests) ... ok
+test_corruption_is_fail_closed_and_namespace_geometry_is_checked (test_storage.StorageTests) ... ok
+test_full_block_spans_multiple_units_and_shares_capacity_with_transfer (test_storage.StorageTests) ... ok
+test_full_capacity_cannot_evict_and_replace_a_conflicting_exact_checkpoint (test_storage.StorageTests) ... ok
+test_idempotent_schema_order_and_repair_of_corrupt_disk_bytes (test_storage.StorageTests) ... ok
+test_inventory_delete_and_idempotent_put (test_storage.StorageTests) ... ok
+test_large_shared_full_block_is_protected_by_units_during_eviction (test_storage.StorageTests) ... ok
+test_legacy_single_unit_block_schema_is_migrated_on_restart (test_storage.StorageTests) ... ok
+test_lru_eviction_and_put_failure_do_not_destroy_existing_entry (test_storage.StorageTests) ... ok
+test_partial_final_block_is_reusable_only_with_its_exact_checkpoint (test_storage.StorageTests) ... ok
+test_recomputed_recurrent_variant_after_checkpoint_eviction (test_storage.StorageTests) ... ok
+test_restart_aborts_orphaned_transfers_and_preserves_prefixes (test_storage.StorageTests) ... ok
+test_restart_recovers_exact_checkpoints_and_shared_blocks (test_storage.StorageTests) ... ok
+test_second_writer_is_rejected (test_storage.StorageTests) ... ok
+test_transfer_pins_share_capacity_and_ack_controls_reclaim (test_storage.StorageTests) ... ok
+test_without_exact_recurrent_state_partial_prefix_is_not_reusable (test_storage.StorageTests) ... ok
+test_abort_rejects_inflight_late_commit (test_telemetry.TelemetryTests) ... ok
+test_chunked_transfer_and_feedback (test_telemetry.TelemetryTests) ... ok
+test_loss_feedback_is_visible_while_request_is_in_flight (test_telemetry.TelemetryTests) ... ok
+test_missing_chunks_rejected (test_telemetry.TelemetryTests) ... ok
+test_roles_drain_before_switch (test_telemetry.TelemetryTests) ... ok
+test_corrupt_or_truncated_serialization_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_decode_handoff_matches_every_next_token (test_tiny_model.TinyModelTests) ... ok
+test_delta_replaces_recurrent_state_and_sends_only_missing_kv (test_tiny_model.TinyModelTests) ... ok
+test_empty_base_delta (test_tiny_model.TinyModelTests) ... ok
+test_forged_dimensions_are_rejected_before_allocation (test_tiny_model.TinyModelTests) ... ok
+test_incremental_logits_match_full_recomputation (test_tiny_model.TinyModelTests) ... ok
+test_invalid_inputs_and_cache_are_rejected (test_tiny_model.TinyModelTests) ... ok
+test_layer_callback_is_complete_and_serializable (test_tiny_model.TinyModelTests) ... ok
+test_model_mismatch_is_rejected (test_tiny_model.TinyModelTests) ... ok
+test_checksum_and_truncation_release_capacity (test_transport.TransportTests) ... ok
+test_failed_send_releases_explicitly_aborted_transfer (test_transport.TransportTests) ... ok
+test_lost_ack_reconnects_without_double_allocating (test_transport.TransportTests) ... ok
+test_oversized_header_rejected (test_transport.TransportTests) ... ok
+test_parallel_streaming_ack_and_release (test_transport.TransportTests) ... ok
+test_partial_request_discard_reclaims_receiver_memory (test_transport.TransportTests) ... ok
+test_persistent_socket_counts_retransmission_deltas (test_transport.TransportTests) ... ok
+test_receiver_bound_and_idempotent_retry (test_transport.TransportTests) ... ok
+test_receiver_shutdown_wakes_idle_stream (test_transport.TransportTests) ... ok
+test_reservation_commits_before_ack (test_transport.TransportTests) ... ok
+test_sustained_chunk_stream_reuses_two_connections (test_transport.TransportTests) ... ok
+test_all_hits_and_outside_profile_are_explicit (test_workload.EmpiricalTests) ... ok
+test_cache_hits_are_separate_from_miss_distribution (test_workload.EmpiricalTests) ... ok
+test_arrivals_and_skew_are_deterministic (test_workload.WorkloadTests) ... ok
+test_bounded_overload_and_errors (test_workload.WorkloadTests) ... ok
+test_comparison_reuses_inputs_and_resets_warmup (test_workload.WorkloadTests) ... ok
+test_queue_time_is_part_of_ttft_and_goodput (test_workload.WorkloadTests) ... ok
+test_single_output_has_no_decode_interval (test_workload.WorkloadTests) ... ok
+
+----------------------------------------------------------------------
+Ran 127 tests in 105.256s
+
+OK (skipped=6)

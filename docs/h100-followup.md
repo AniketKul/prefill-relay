@@ -9,6 +9,7 @@ The results below use one H100 PCIe 80 GB. The trained serving runs use Qwen3.5-
 | [128K end-to-end handoff](results/followup-long.json) | The cold 131,072-token request transferred 1,656,048,772 bytes, with 74.77 s to first token. All four generated tokens matched unsplit inference. |
 | [Incremental migration](results/followup-migration.json) | Extending an 8,192-token destination checkpoint to 16,384 tokens transferred 161,472,631 bytes. A cold migration of the same state used 295,754,359 bytes. |
 | [Dense and hybrid prefill](dense-profile.md) | At 131,072 tokens the dense 2B model produced 10.00 GiB of state and the hybrid 0.8B model 1.52 GiB. Model sizes and architectures differ. |
+| [CUDA graphs and reserved KV](reserved-decode.md) | Batch one reached at least 41.90 tokens/s at every sampled length in the independent 32-step calibration. All batches 1–4 preserved the tested logits, tokens and original checkpoints. |
 | [Feed-forward CUDA graphs](decode-graphs.md) | The independent batch-one calibration exceeded 40 tokens/s at 128, 1,024, 8,192 and 32,768 tokens. The 131,072-token median was 32.55 tokens/s. |
 | [Eager decode calibration](capacity-study.md) | Across five context lengths and batches 1–4, no batch met 40 tokens/s at every length. At batch 1 the slowest median was 39.03 tokens/s. Batch 4 qualified at 25 tokens/s. |
 
@@ -25,3 +26,7 @@ Three seeded prompts contained 49,377, 37,246 and 15,766 tokens. Every policy sa
 | Selective | 3 | 1 | 41.29 / 56.67 | 1,338,625,140 |
 
 Selective routing chose remote prefill on all three long prompts. Timings include shared-GPU contention, service overhead and any compilation for newly encountered shapes. Three observations per policy do not establish a comparative performance advantage.
+
+## Correctness and packaging
+
+The Mac trained CPU run passed 121 of 127 tests and skipped six device or deployment checks. The dependency-free installation passed 80 and skipped 47. Both cross-host checks subsequently passed with H100 prefill and CPU decode. The `uv build --no-sources` wheel and source archive each contained all 34 package modules, byte-identical to their source files. [CPU test log](results/followup-mac-cpu.log) · [Core test log](results/followup-core.log) · [Two-host trained test](results/followup-physical.log) · [Two-host tiny test](results/followup-physical-tiny.log) · [Archive verification](results/h100-followup-package.json)

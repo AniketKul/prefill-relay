@@ -1,0 +1,8 @@
+warning: The `extra-build-dependencies` option is experimental and may change without warning. Pass `--preview-features extra-build-dependencies` to disable this warning.
+test_real_remote_prefill_and_local_decode (test_ssh_worker.RemoteHandoffTests) ... ok
+test_endpoint_and_host_validation (test_ssh_worker.SSHConfigurationTests) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 6.652s
+
+OK
