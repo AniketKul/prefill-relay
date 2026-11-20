@@ -11,8 +11,10 @@ from .analytics import Profile, Workload, count, grid_search, positive, required
 from .calibration import select_decode_batch
 
 
-def modeled_ttft(lengths, arrival_rate, row, profile, remote_instances, link_bytes_s, batch, decode_s):
+def modeled_ttft(lengths, arrival_rate, row, profile, remote_instances, link_bytes_s, batch, decode_s,
+                 *, remote_profile=None):
     """Uniform arrivals and FIFO stage queues. Transfer starts at prefill completion."""
+    prefill_profiles = {False: profile, True: profile if remote_profile is None else remote_profile}
     producers = {False: [0.] * row['prefill_instances'], True: [0.] * remote_instances}
     ready = []
     for idx, length in enumerate(lengths):
@@ -20,7 +22,7 @@ def modeled_ttft(lengths, arrival_rate, row, profile, remote_instances, link_byt
         # A producer is available for the next request as soon as computation ends.
         pool = producers[remote]
         start = max(idx / arrival_rate, pool[0])
-        prefill, size = profile.at(length)
+        prefill, size = prefill_profiles[remote].at(length)
         end = start + prefill
         heapq.heapreplace(pool, end)
         ready.append((end, idx, size if remote else 0))
@@ -41,11 +43,18 @@ def modeled_ttft(lengths, arrival_rate, row, profile, remote_instances, link_byt
     return {'mean_s': fmean(ttft), 'p90_s': sorted(ttft)[math.ceil(.9 * len(ttft)) - 1]}
 
 
-def study(measurements, contexts, slo, settings):
+def study(measurements, contexts, slo, settings, *, remote_measurements=None):
     profile = Profile(**measurements['profile'])
     workload = Workload(mu=settings['mu'], sigma=settings['sigma'], low=settings['low'], high=settings['high'])
-    profile.at(workload.low)
-    profile.at(workload.high)
+    producer_profile = profile
+    if remote_measurements is not None:
+        for field in ('model', 'revision', 'dtype'):
+            if not measurements.get(field) or remote_measurements.get(field) != measurements[field]:
+                raise ValueError(f'remote and local profiles must identify the same {field}')
+        producer_profile = Profile(**remote_measurements['profile'])
+    for measured in (profile, producer_profile):
+        measured.at(workload.low)
+        measured.at(workload.high)
     selection = select_decode_batch(measurements['rows'], contexts, slo, settings['max_batch'])
     result = {'calibration': selection, 'mean_input_tokens': workload.mean, 'policies': {}}
     if selection['batch_max'] == 0:
@@ -71,7 +80,7 @@ def study(measurements, contexts, slo, settings):
                 'all_local_same_count': (0, remote + local, [workload.high], None),
                 'all_local_same_budget': (0, equal_budget_local, [workload.high], None)}
     for policy, (remote_count, local_count, thresholds, counts) in policies.items():
-        best, grid = grid_search(workload, profile, profile, remote_count, local_count, link,
+        best, grid = grid_search(workload, producer_profile, profile, remote_count, local_count, link,
                                  batch, step, settings['output_tokens'], thresholds, counts)
         best = dict(best)
         best['remote_instances'] = remote_count
@@ -95,20 +104,22 @@ def study(measurements, contexts, slo, settings):
     for row in result['policies'].values():
         row['throughput_ratio_same_count'] = row['throughput'] / count_baseline
         row['throughput_ratio_same_budget'] = row['throughput'] / budget_baseline
-        offloaded = [profile.at(n) for n in lengths if n > row['threshold']]
+        offloaded = [producer_profile.at(n) for n in lengths if n > row['threshold']]
         if offloaded:
             seconds, sizes = zip(*offloaded)
             row['compute_saturated_egress_gbps'] = required_egress(row['remote_instances'], 1, sizes, seconds) * 8 / 1e9
         else:
             row['compute_saturated_egress_gbps'] = 0.
         row['modeled_ttft'] = modeled_ttft(lengths, offered, row, profile, row['remote_instances'], link,
-                                          batch, step * settings['output_tokens'])
+                                          batch, step * settings['output_tokens'], remote_profile=producer_profile)
     return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('calibration', type=Path)
+    parser.add_argument('--remote-profile', type=Path,
+                        help='optional pretrained prefill profile from the remote producer configuration')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--slo', nargs='+', type=float, default=[40., 25.])
     parser.add_argument('--contexts', nargs='+', type=int)
@@ -130,14 +141,23 @@ def main():
     args = parser.parse_args()
     raw = args.calibration.read_bytes()
     measurement = json.loads(raw)['measurements']
+    remote_measurements = None
+    if args.remote_profile is not None:
+        remote_raw = args.remote_profile.read_bytes()
+        remote_payload = json.loads(remote_raw)
+        remote_measurements = remote_payload.get('measurements', remote_payload)
     contexts = args.contexts or measurement['decode_context_lengths']
-    settings = {k: v for k, v in vars(args).items() if k not in ('calibration', 'output', 'slo', 'contexts')}
+    settings = {k: v for k, v in vars(args).items() if k not in ('calibration', 'output', 'slo', 'contexts', 'remote_profile')}
     report = {'kind': 'capacity and FIFO latency estimates from a single-device profile',
               'model': measurement['model'], 'revision': measurement['revision'], 'device': measurement['device'],
               'calibration_sha256': hashlib.sha256(raw).hexdigest(), 'settings': settings,
               'source_sha256': {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                 for name in ('analytics.py', 'capacity_study.py', 'calibration.py')},
-              'targets': [study(measurement, contexts, target, settings) for target in args.slo]}
+              'targets': [study(measurement, contexts, target, settings, remote_measurements=remote_measurements) for target in args.slo]}
+    if remote_measurements is not None:
+        report['kind'] = 'capacity and FIFO latency estimates from separate local and remote profiles'
+        report['remote_profile_sha256'] = hashlib.sha256(remote_raw).hexdigest()
+        report['remote_device'] = remote_measurements['device']
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + '\n')
 

@@ -50,3 +50,29 @@ class CalibrationTests(unittest.TestCase):
         self.assertEqual(result['configurations_searched'], 33)
         self.assertEqual(len(result['allocation_sweep']), 3)
         self.assertTrue(all(row['modeled_ttft']['mean_s'] > 0 for row in policies.values()))
+
+    def test_heterogeneous_service_times_egress_and_baselines(self):
+        metadata = dict(model='tiny', revision='pinned', dtype='bf16')
+        local = dict(**metadata, rows=[dict(length=1, decode_step_seconds=.01)],
+                     profile=dict(lengths=[1, 10], seconds=[10, 10], kv_bytes=[10, 10]))
+        remote = dict(**metadata, profile=dict(lengths=[1, 10], seconds=[2, 2], kv_bytes=[40, 40]))
+        settings = dict(mu=1, sigma=.3, low=1, high=10, max_batch=1, remote_instances=1, local_instances=2,
+                        output_tokens=1, samples=8, threshold_step=1, remote_unit_cost=2., local_unit_cost=1.,
+                        link_gbps=.00000008, offered_fraction=.01, seed=0)
+        same = study(local, [1], 40, settings)
+        different = study(local, [1], 40, settings, remote_measurements=remote)
+        rp = different['policies']['all_remote']
+        self.assertAlmostEqual(rp['throughput'], .25)  # 10 B/s link divided by 40 B/request
+        self.assertAlmostEqual(rp['compute_saturated_egress_gbps'], 20 * 8 / 1e9)
+        self.assertAlmostEqual(rp['modeled_ttft']['mean_s'], 6.)  # 2 s compute + 4 s transfer
+        for name in ('all_local_same_count', 'all_local_same_budget'):
+            self.assertEqual(different['policies'][name]['throughput'], same['policies'][name]['throughput'])
+            self.assertAlmostEqual(different['policies'][name]['modeled_ttft']['mean_s'], 10.)
+        self.assertEqual(same, study(local, [1], 40, settings, remote_measurements=local))
+        for field in metadata:
+            with self.assertRaisesRegex(ValueError, field):
+                study(local, [1], 40, settings, remote_measurements={**remote, field: 'different'})
+        short = dict(remote['profile'])
+        short['lengths'] = [1, 9]
+        with self.assertRaisesRegex(ValueError, 'outside measured'):
+            study(local, [1], 40, settings, remote_measurements={**remote, 'profile': short})
