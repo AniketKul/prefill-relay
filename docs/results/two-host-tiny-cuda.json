@@ -1,0 +1,43 @@
+{
+  "kind": "two physical hosts, encrypted loopback forwarding, deterministic tiny model",
+  "source_commit": "61c8e169fc2e75c2bc5a60cded888c2ff4d6a4a6",
+  "source_verified_equal_on_both_hosts": {
+    "src/prefill_relay/ssh_worker.py": "1444f768c7ceb1fee68047ab545723467989bf290766c344b5143cdfaa50e83a",
+    "src/prefill_relay/worker.py": "710a179e7f531945a18552da03e87b3842918e1d89baf768bf21885bcf55eaf7",
+    "src/prefill_relay/transport.py": "664c00ff74875048f158f5aae72c4bebdaf15792d29e1be92d561ca6905be671",
+    "src/prefill_relay/rate_limit.py": "0961fd1d611a5b9795a01156e339e10e9a21295c9c6da07c9a46a3c04bef203b",
+    "src/prefill_relay/backend.py": "ac74c7514d1df5104265a281d220a75a44b46ff036cde1e0424f907e7b95373f",
+    "src/prefill_relay/tiny_model.py": "f1ca1d1c0dbbb06ca28a5cc63ee1d93391f350f323e243a0c236b791e5404104",
+    "src/prefill_relay/storage.py": "24137e7590cc2f2ebcbc7aec0c43077e4706ea7011b51fa676b6d36efc33cc53",
+    "src/prefill_relay/cache_service.py": "18489097500b808f0f3844f1e7feeeda83f59772924cac8074aca45f2df5f544",
+    "src/prefill_relay/hf_state.py": "bae34a8867202f96f401885d63fbf8759cd342d7313fe74353bfee37c30f9c2f",
+    "src/prefill_relay/batch_decode.py": "eacb34278e8d6abd475d3c54e4735360c77f92f20d86d8003f42c830486f1700"
+  },
+  "local_test": {
+    "tests/test_ssh_worker.py": "f69510c22606ee9ee303e761d72ad5243dd61aadffff01e510cfd8fafa87834e"
+  },
+  "local_decode_device": "cpu",
+  "local_os": "Darwin",
+  "remote_prefill_device": "cuda",
+  "remote_gpu": "NVIDIA H100 PCIe",
+  "remote_os": "Linux",
+  "command": "uv run --locked --extra gpu python -m unittest discover -s tests -p test_ssh_worker.py -v",
+  "environment": {
+    "PREFILL_RELAY_SSH_HOST": "<ssh-alias>",
+    "PREFILL_RELAY_SSH_PROJECT": "<remote-checkout>",
+    "PREFILL_RELAY_REMOTE_DEVICE": "cuda"
+  },
+  "passed": true,
+  "exit_code": 0,
+  "elapsed_s": 7.408,
+  "tested": {
+    "prefix_tokens": 33,
+    "prompt_tokens": 67,
+    "output_tokens": 4,
+    "matches_local_reference": true,
+    "remote_cache_query": true,
+    "rate_service_charged_bytes": true,
+    "remaining_remote_transfer_handles": 0
+  },
+  "raw_log_sha256": "79d51ca92fdfeee413e94161e7a240df813fc4d7e235f993116971610ba4f78b"
+}
