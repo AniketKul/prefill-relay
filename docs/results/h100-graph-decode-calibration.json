@@ -1,0 +1,293 @@
+{
+  "measurements": {
+    "kind": "prefill profile plus native decode batch calibration",
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "dtype": "torch.bfloat16",
+    "torch": "2.6.0+cu124",
+    "python": "3.10.12",
+    "dependencies": {
+      "transformers": "5.18.0",
+      "flash-linear-attention": "0.4.1",
+      "fla-core": "0.4.1"
+    },
+    "device": "NVIDIA H100 PCIe",
+    "chunk_size": 4096,
+    "kernels": {
+      "causal_conv1d_version": "1.5.3.post1",
+      "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+      "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+    },
+    "rows": [
+      {
+        "batch": 1,
+        "length": 128,
+        "decode_step_seconds": 0.024085933109745383,
+        "decode_samples_seconds": [
+          0.023964762222021818,
+          0.02413842175155878,
+          0.024085933109745383
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 2,
+        "length": 128,
+        "decode_step_seconds": 0.02561755699571222,
+        "decode_samples_seconds": [
+          0.025519163347780704,
+          0.02561755699571222,
+          0.026927668252028525
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 3,
+        "length": 128,
+        "decode_step_seconds": 0.025437902193516493,
+        "decode_samples_seconds": [
+          0.025000597699545324,
+          0.025437902193516493,
+          0.025971659924834967
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 4,
+        "length": 128,
+        "decode_step_seconds": 0.025697236647829413,
+        "decode_samples_seconds": [
+          0.025757722789421678,
+          0.025697236647829413,
+          0.02566465560812503
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 1,
+        "length": 1024,
+        "decode_step_seconds": 0.024386894656345248,
+        "decode_samples_seconds": [
+          0.02429460536222905,
+          0.024535174248740077,
+          0.024386894656345248
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 2,
+        "length": 1024,
+        "decode_step_seconds": 0.02587117813527584,
+        "decode_samples_seconds": [
+          0.02587117813527584,
+          0.025967133580707014,
+          0.02556109707802534
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 3,
+        "length": 1024,
+        "decode_step_seconds": 0.025906404363922775,
+        "decode_samples_seconds": [
+          0.025615332764573395,
+          0.025906404363922775,
+          0.025999845704063773
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 4,
+        "length": 1024,
+        "decode_step_seconds": 0.02588589722290635,
+        "decode_samples_seconds": [
+          0.02588589722290635,
+          0.0259248458314687,
+          0.025631568278186023
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 1,
+        "length": 8192,
+        "decode_step_seconds": 0.023940468905493617,
+        "decode_samples_seconds": [
+          0.023940468905493617,
+          0.023927402449771762,
+          0.02405033155810088
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 2,
+        "length": 8192,
+        "decode_step_seconds": 0.02566025429405272,
+        "decode_samples_seconds": [
+          0.025752786081284285,
+          0.02557562116999179,
+          0.02566025429405272
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 3,
+        "length": 8192,
+        "decode_step_seconds": 0.025753500871360302,
+        "decode_samples_seconds": [
+          0.025555682252161205,
+          0.025753500871360302,
+          0.025758786592632532
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 4,
+        "length": 8192,
+        "decode_step_seconds": 0.026077296934090555,
+        "decode_samples_seconds": [
+          0.026122579001821578,
+          0.026077296934090555,
+          0.025660142535343766
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 1,
+        "length": 32768,
+        "decode_step_seconds": 0.024354224791750312,
+        "decode_samples_seconds": [
+          0.02421599777881056,
+          0.024354224791750312,
+          0.024869636981748044
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 2,
+        "length": 32768,
+        "decode_step_seconds": 0.02575437689665705,
+        "decode_samples_seconds": [
+          0.02575437689665705,
+          0.025927438982762396,
+          0.025707486900500953
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 3,
+        "length": 32768,
+        "decode_step_seconds": 0.026109440717846155,
+        "decode_samples_seconds": [
+          0.026109440717846155,
+          0.02603840024676174,
+          0.026540600112639368
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 4,
+        "length": 32768,
+        "decode_step_seconds": 0.02622244437225163,
+        "decode_samples_seconds": [
+          0.026094050728715956,
+          0.026637565693818033,
+          0.02622244437225163
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 1,
+        "length": 131072,
+        "decode_step_seconds": 0.030720715294592083,
+        "decode_samples_seconds": [
+          0.027498119045048952,
+          0.03108269313815981,
+          0.030720715294592083
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 2,
+        "length": 131072,
+        "decode_step_seconds": 0.030339974677190185,
+        "decode_samples_seconds": [
+          0.03624099411536008,
+          0.030339974677190185,
+          0.02650929451920092
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 3,
+        "length": 131072,
+        "decode_step_seconds": 0.03170360159128904,
+        "decode_samples_seconds": [
+          0.027887145755812526,
+          0.03170360159128904,
+          0.03425206639803946
+        ],
+        "decode_steps_per_sample": 32
+      },
+      {
+        "batch": 4,
+        "length": 131072,
+        "decode_step_seconds": 0.02924875181633979,
+        "decode_samples_seconds": [
+          0.02926458592992276,
+          0.029239738476462662,
+          0.02924875181633979
+        ],
+        "decode_steps_per_sample": 32
+      }
+    ],
+    "profile": {
+      "lengths": [
+        1,
+        64,
+        256,
+        1024,
+        8192,
+        32768,
+        131072
+      ],
+      "seconds": [
+        0.03848273307085037,
+        0.03908229619264603,
+        0.04174921661615372,
+        0.04226887598633766,
+        0.11066820472478867,
+        0.763885673135519,
+        8.919479206204414
+      ],
+      "kv_bytes": [
+        19771392,
+        20545536,
+        22904832,
+        32342016,
+        120422400,
+        422412288,
+        1630371840
+      ]
+    },
+    "decode_method": "warm synchronized native continuations; median seconds per generated step",
+    "dense_comparison": "configuration byte estimate only; no dense-model timing or quality measurement",
+    "temperature": "greedy",
+    "repeats": 3,
+    "prefill_profile_sha256": "8d733c426206b5961c2e7b25722e8cdd7752193de17d2e4fe86896408df0715c",
+    "decode_context_lengths": [
+      128,
+      1024,
+      8192,
+      32768,
+      131072
+    ],
+    "decode_graphs": true,
+    "source_sha256": {
+      "calibration.py": "d75fe437b7556286e5387f7081310fbd0bc1bbf38ec5fad6ddfdbd6abeddc367",
+      "hf_backend.py": "b7d1f617e4f7dfee7486f0fb98c4235ed035d405e7f3cd0014f7eff9762ea8bc",
+      "hf_decode.py": "1a01c8cbe2f06b454787338a7e0dd05c7fb27f3c4887562392c7cdb519f97e9d",
+      "hf_state.py": "bae34a8867202f96f401885d63fbf8759cd342d7313fe74353bfee37c30f9c2f",
+      "mlp_graphs.py": "174891550a947f5acdabea733b1434913e40e276cfacf482266b04e1784172bf"
+    }
+  }
+}
