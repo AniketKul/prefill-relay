@@ -45,6 +45,8 @@ class CalibrationTests(unittest.TestCase):
         self.assertEqual(policies['all_local_same_count']['resource_cost'], 5)
         self.assertEqual(policies['all_local_same_count']['egress_gbps'], 0)
         self.assertEqual(policies['all_remote']['p'], 1)
+        self.assertEqual(policies['all_local_same_budget']['throughput_ratio_same_budget'], 1.)
+        self.assertGreater(policies['all_remote']['compute_saturated_egress_gbps'], 0.)
         self.assertEqual(result['configurations_searched'], 33)
         self.assertEqual(len(result['allocation_sweep']), 3)
         self.assertTrue(all(row['modeled_ttft']['mean_s'] > 0 for row in policies.values()))

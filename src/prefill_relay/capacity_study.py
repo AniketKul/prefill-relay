@@ -90,7 +90,11 @@ def study(measurements, contexts, slo, settings):
     result['input_sha256'] = hashlib.sha256(json.dumps(lengths, separators=(',', ':')).encode()).hexdigest()
     offered = min(row['throughput'] for row in result['policies'].values()) * settings['offered_fraction']
     result['offered_requests_s'] = offered
+    count_baseline = result['policies']['all_local_same_count']['throughput']
+    budget_baseline = result['policies']['all_local_same_budget']['throughput']
     for row in result['policies'].values():
+        row['throughput_ratio_same_count'] = row['throughput'] / count_baseline
+        row['throughput_ratio_same_budget'] = row['throughput'] / budget_baseline
         offloaded = [profile.at(n) for n in lengths if n > row['threshold']]
         if offloaded:
             seconds, sizes = zip(*offloaded)
