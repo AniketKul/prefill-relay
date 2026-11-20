@@ -39,6 +39,20 @@ The optimized service used the same arrivals, prompts, output length, link budge
 
 Both remote policies again chose the same placement for these three prompts. The eager and reserved-KV configurations used different calibrated batch caps. These measurements do not isolate the effect of the decode kernel.
 
+## Arrival workloads with the calibrated decoder
+
+All 180 requests completed. Each scenario ran 12 identical prompts per policy and generated eight tokens per request. The three policies produced the same output for every matched input. Nineteen requests sustained at least 40 decode tokens/s, including 12 complete-cache-hit requests in the warm scenario. [Per-request measurements](results/followup-combined-suite.json) · [Source and command](results/followup-combined-suite-receipt.json)
+
+| Scenario | Requests at 40 tokens/s, local / remote / selective | P90 TTFT (s), local / remote / selective | Cross-cluster MB, remote / selective |
+|---|---:|---:|---:|
+| Uniform | 0 / 2 / 1 | 9.87 / 4.29 / 10.20 | 310.33 / 56.51 |
+| Burst | 1 / 1 / 0 | 11.22 / 6.06 / 11.00 | 310.33 / 33.05 |
+| Skew | 0 / 1 / 0 | 12.57 / 6.36 / 13.11 | 106.08 / 279.33 |
+| Bandwidth | 0 / 1 / 0 | 10.23 / 33.15 / 15.43 | 310.33 / 56.51 |
+| Warm | 6 / 0 / 6 | 0.16 / 0.18 / 0.19 | 0.00 / 0.00 |
+
+In the bandwidth-drop scenario selective routing reduced egress from 310.33 MB to 56.51 MB relative to all-remote. All-local produced the lowest P90 TTFT in that scenario. For skewed input, selective routing transferred more bytes than all-remote.
+
 ## Correctness and packaging
 
 Across the H100 and Mac, all 127 distinct tests ran successfully. The [H100 suite](results/followup-tests.log) passed 124 and skipped the three SSH tests, which passed on the Mac. This covered the trained six-worker federation, cross-site prefix routing, RoCE, eager/graph logit parity and KV ownership. The [H100 receipt](results/followup-tests-receipt.json) identifies the exact source and configuration.
