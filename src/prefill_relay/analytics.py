@@ -137,4 +137,4 @@ def grid_search(workload,remote_profile,local_profile,n_remote,n_local,bandwidth
         for n in counts:
             c=capacity(p,long,short,remote_profile,local_profile,n_remote,n,n_local-n,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens)
             rows.append(dict(threshold=t,p=p,mean_long=long,mean_short=short,prefill_instances=n,decode_instances=n_local-n,throughput=c.total,remote_capacity=c.remote,local_capacity=c.local,decode_capacity=c.decode,egress_gbps=c.egress_bytes_s*8/1e9))
-    return max(rows,key=lambda r:r['throughput']), rows
+    return max(rows,key=lambda r:(r['throughput'], -r['egress_gbps'])), rows

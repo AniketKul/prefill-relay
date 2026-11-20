@@ -13,6 +13,41 @@ class ControlTests(unittest.TestCase):
         self.assertGreater(recovered['throughput'],0)
         self.assertEqual(control.router.route(50,0,0,False).target,'local')
 
+    def test_congestion_changes_cold_routing_with_constant_line_rate(self):
+        from prefill_relay.empirical import EmpiricalWorkload
+        traffic = EmpiricalWorkload([1,5,10,50,100])
+        remote = Profile((1,100),(.02,.2),(100,500))
+        local = Profile((1,100),(.01,.4),(100,500))
+        control = Controller(traffic,remote,local,1,2,800,1,.01,10,[0,3,7,25,75,100])
+        base = control.update(0,800,.1,0)
+        self.assertEqual(control.router.route(100,0,0,True).target, 'remote')
+        for now, utilization, depth in [(1,.95,0),(2,.1,24)]:
+            busy = control.update(now,800,utilization,depth)
+            self.assertGreater(busy['threshold'], base['threshold'])
+            self.assertEqual(busy['prefill_instances'], base['prefill_instances'])
+            self.assertLess(busy['routing_bandwidth_bytes_s'], 800)
+            self.assertEqual(control.router.route(100,0,0,False).target, 'local')
+        relieved = control.update(3,800,.1,0)
+        self.assertEqual(relieved['threshold'], base['threshold'])
+
+    def test_infeasible_fixed_roles_recover_after_workload_change(self):
+        from prefill_relay.empirical import EmpiricalWorkload
+        profile = Profile((1,100),(.1,.1),(100,100))
+        control = Controller(EmpiricalWorkload([80]),profile,profile,2,2,1e6,1,1,1,[50])
+        self.assertEqual(control.update(0,1e6,0,0)['prefill_instances'], 0)
+        shifted = control.update(1,1e6,0,0, workload=EmpiricalWorkload([20]))
+        self.assertEqual(shifted['prefill_instances'], 1)
+        self.assertGreater(shifted['throughput'], 0)
+
+    def test_equal_capacity_prefers_lower_egress(self):
+        from prefill_relay.empirical import EmpiricalWorkload
+        from prefill_relay.analytics import grid_search
+        profile = Profile((1,100),(.1,.1),(100,100))
+        best, rows = grid_search(EmpiricalWorkload([1,100]),profile,profile,2,2,1e6,
+                                 1,1,1,[0,100],prefill_counts=[1])
+        self.assertEqual({r['throughput'] for r in rows}, {1})
+        self.assertEqual(best['egress_gbps'], 0)
+
     def test_cache_requires_exact_recurrent_checkpoint(self):
         c=HybridCache(block_tokens=2,block_bytes=16,capacity_blocks=20,namespace='model-a')
         c.put((1,2,3,4),{'full':(b'ab',b'cd')},{'linear':b'state4'})

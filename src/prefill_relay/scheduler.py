@@ -77,11 +77,27 @@ class Controller:
                 elif (any(congested(s) for s in prefill) and decode['utilization'] < self.utilization_trigger
                       and active + 1 < self.args[4]):
                     counts, adjustment = [active + 1], 'prefill_queue'
-            # shortcut: effective bandwidth is supplied by telemetry; deploy adapters must measure it.
-            self.current,_=grid_search(*self.args,bandwidth_bytes_s,*self.decode,self.thresholds,prefill_counts=counts)
-            if adjustment and self.current['throughput'] == 0:
-                self.current,_=grid_search(*self.args,bandwidth_bytes_s,*self.decode,self.thresholds)
-            elif adjustment:
+            # Target utilization leaves capacity for queued frames to drain.
+            budget = bandwidth_bytes_s
+            if utilization >= self.utilization_trigger:
+                budget *= self.utilization_trigger
+            if queue_depth >= self.queue_trigger:
+                budget *= self.queue_trigger / (queue_depth + 1)
+            def search(counts):
+                best, _ = grid_search(*self.args, budget, *self.decode, self.thresholds,
+                                      prefill_counts=counts)
+                return best
+            best = search(counts)
+            if best['throughput'] == 0 and counts is not None:
+                best = search(None)
+                adjustment = None
+                long_due = True
+            if best['throughput'] == 0:
+                self.current = None
+                self.last_long = None
+                raise ValueError('no feasible prefill and decode allocation on this threshold grid')
+            self.current = dict(best, routing_bandwidth_bytes_s=budget)
+            if adjustment:
                 self.current['stage_adjustment'] = adjustment
             if long_due: self.last_long=now
         return self.current
