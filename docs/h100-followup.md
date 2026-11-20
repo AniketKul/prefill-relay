@@ -27,6 +27,18 @@ Three seeded prompts contained 49,377, 37,246 and 15,766 tokens. Every policy sa
 
 Selective routing chose remote prefill on all three long prompts. Timings include shared-GPU contention, service overhead and any compilation for newly encountered shapes. Three observations per policy do not establish a comparative performance advantage.
 
+## Long-generation workload with CUDA graphs and reserved KV
+
+The optimized service used the same arrivals, prompts, output length, link budget and local RoCE transport as the eager workload. Its 40-token/s calibration admitted batch one. All nine requests completed and produced exactly the same 9,216 output tokens as their eager counterparts. None sustained 40 tokens/s in this serving run. Service decode time includes batch queueing and waiting for the compute lock. Multiple worker processes share the GPU. [Raw per-request results](results/followup-combined-lognormal.json) · [Tested source and invocation](results/followup-combined-lognormal-receipt.json)
+
+| Policy | Reached 40 tokens/s | Mean decode tokens/s | Mean / P90 TTFT (s) | Cross-cluster bytes |
+|---|---:|---:|---:|---:|
+| All local | 0 of 3 | 25.29 | 94.31 / 147.84 | 0 |
+| All remote | 0 of 3 | 27.97 | 49.70 / 66.48 | 1,338,625,140 |
+| Selective | 0 of 3 | 28.40 | 32.04 / 46.88 | 1,338,625,140 |
+
+Both remote policies again chose the same placement for these three prompts. The eager and reserved-KV configurations used different calibrated batch caps. These measurements do not isolate the effect of the decode kernel.
+
 ## Correctness and packaging
 
 Across the H100 and Mac, all 127 distinct tests ran successfully. The [H100 suite](results/followup-tests.log) passed 124 and skipped the three SSH tests, which passed on the Mac. This covered the trained six-worker federation, cross-site prefix routing, RoCE, eager/graph logit parity and KV ownership. The [H100 receipt](results/followup-tests-receipt.json) identifies the exact source and configuration.
