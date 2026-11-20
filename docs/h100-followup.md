@@ -12,3 +12,15 @@ The results below use one H100 PCIe 80 GB. The trained serving runs use Qwen3.5-
 | [Decode calibration](capacity-study.md) | Across five context lengths and batches 1–4, no batch met 40 tokens/s at every length. At batch 1 the slowest median was 39.03 tokens/s. Batch 4 qualified at 25 tokens/s. |
 
 The [service](results/followup-service-receipt.json), [long-context](results/followup-long-receipt.json) and [migration](results/followup-migration-receipt.json) receipts identify the tested source, commands and raw output by SHA-256. The [capacity study](capacity-study.md) uses single-device measurements to calculate fleet throughput and queue latency. The local RoCE test uses a single server. Geographically separate GPU clusters, production traffic and availability are outside these measurements.
+
+## Long-generation serving workload
+
+Three seeded prompts contained 49,377, 37,246 and 15,766 tokens. Every policy saw identical input tokens and scheduled arrivals. Each request produced exactly 1,024 tokens, and outputs matched across policies for all three prompts. The run used a 1,000 MiB/s cross-cluster budget, local RoCE and a batch cap calibrated at 25 tokens/s. The actual decode goodput threshold was 40 tokens/s. [Raw measurements](results/followup-lognormal.json) · [Tested source and invocation](results/followup-lognormal-receipt.json)
+
+| Policy | Completed | Reached 40 tokens/s | Mean / P90 TTFT (s) | Cross-cluster bytes |
+|---|---:|---:|---:|---:|
+| All local | 3 | 1 | 57.93 / 76.06 | 0 |
+| All remote | 3 | 0 | 52.35 / 75.26 | 1,338,625,140 |
+| Selective | 3 | 1 | 41.29 / 56.67 | 1,338,625,140 |
+
+Selective routing chose remote prefill on all three long prompts. Timings include shared-GPU contention, service overhead and any compilation for newly encountered shapes. Three observations per policy do not establish a comparative performance advantage.
