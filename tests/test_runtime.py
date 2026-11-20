@@ -20,6 +20,32 @@ class RuntimeTests(unittest.TestCase):
             self.assertIn('prefill',service.roles.roles.values())
             self.assertEqual(local['generated_tokens'],service.reference(tokens,2)['generated_tokens'])
 
+    def test_evicted_migration_base_falls_back_to_real_prefill(self):
+        from unittest.mock import patch
+        from prefill_relay.runtime import Coordinator
+        tokens = list(range(48))
+        device = os.environ.get('PREFILL_RELAY_TEST_DEVICE', 'cpu')
+        with tempfile.TemporaryDirectory() as path, Coordinator(path, device=device, threshold=64,
+                                                                bandwidth_bytes_s=1000*2**20) as service:
+            for length in (16, 32):
+                service.run(tokens[:length], 2, 'all-remote')
+            destination = service.directory._client(('local','local-0'), service.namespace)
+            self.assertTrue(destination.delete(tokens[:32]))
+            self.assertEqual(destination.match_length(tokens), 16)
+            apply_delta = destination.apply_delta
+            def evict_then_apply(prompt, delta, known):
+                self.assertTrue(destination.delete(tokens[:16]))
+                return apply_delta(prompt, delta, known)
+            with patch.object(destination, 'apply_delta', side_effect=evict_then_apply):
+                result = service.run(tokens, 2)
+            self.assertEqual(result['migration']['status'], 'stale_prefix')
+            self.assertEqual(result['migration']['length'], 0)
+            self.assertGreater(result['transferred_bytes'], 0)
+            self.assertEqual(result['target'], 'local')
+            self.assertEqual(result['prefix_tokens'], 0)
+            self.assertEqual(result['generated_tokens'], service.reference(tokens,2)['generated_tokens'])
+            self.assertTrue(all(row['transfers'] == 0 for row in service.stats()['workers'].values()))
+
     def test_small_cache_admission_does_not_abort_generation(self):
         from prefill_relay.runtime import Coordinator
         with tempfile.TemporaryDirectory() as path, Coordinator(path,device=os.environ.get('PREFILL_RELAY_TEST_DEVICE','cpu'),cache_bytes=4096) as service:
