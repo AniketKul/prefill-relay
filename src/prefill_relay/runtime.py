@@ -23,7 +23,8 @@ class Coordinator:
     """
     def __init__(self,path,backend='tiny',device='cpu',model_id=None,revision='main',
                  bandwidth_bytes_s=100*2**20,threshold=128,profile=None,output_tokens=8,
-                 local_workers=2,remote_workers=1,connections=4,cache_bytes=4*2**30,max_batch=4,batch_wait_s=.005,receive_bytes=4*2**30,block_tokens=16):
+                 local_workers=2,remote_workers=1,connections=4,cache_bytes=4*2**30,max_batch=4,batch_wait_s=.005,receive_bytes=4*2**30,block_tokens=16,
+                 local_rdma_address=None, decode_slo_tps=None):
         count(local_workers,'local workers',zero=False); count(remote_workers,'remote workers',zero=False)
         for value,name in [(connections,'connections'),(max_batch,'maximum batch'),(output_tokens,'output tokens'),
                            (cache_bytes,'cache bytes'),(receive_bytes,'receive bytes'),(block_tokens,'block tokens')]:
@@ -32,12 +33,22 @@ class Coordinator:
         positive(threshold,'threshold',zero=True)
         if local_workers<2: raise ValueError('at least two local workers required')
         self.path=Path(path).expanduser().resolve(); self.path.mkdir(parents=True,exist_ok=True)
-        self.config=dict(backend=backend,device=device,model_id=model_id,revision=revision,
+        self.decode_calibration = None
+        if decode_slo_tps is not None:
+            if profile is None: raise ValueError('decode SLO calibration requires a measured profile')
+            from .calibration import select_decode_batch
+            measured = profile.get('measurements', profile)
+            self.decode_calibration = select_decode_batch(measured['rows'], measured.get('decode_context_lengths', measured['profile']['lengths']),
+                                                         decode_slo_tps, max_batch)
+            max_batch = self.decode_calibration['batch_max']
+            if not max_batch: raise ValueError('no measured batch meets the requested decode SLO')
+        self.config=dict(local_rdma_address=local_rdma_address,backend=backend,device=device,model_id=model_id,revision=revision,
                          connections=connections,block_tokens=block_tokens,max_batch=max_batch,batch_wait_s=batch_wait_s,cache_bytes=cache_bytes,receive_bytes=receive_bytes,token=secrets.token_urlsafe(32))
         self.nlocal=local_workers; self.nremote=remote_workers; self.threshold=threshold
         self.monitor=LinkMonitor(bandwidth_bytes_s); self.bandwidth=bandwidth_bytes_s
         self.control_lock=threading.RLock(); self.egress=threading.Lock(); self.queue=0
         self.observations=deque(maxlen=256); self.controller=None; self.profile=profile
+        self.replications = set()
         self.output_tokens=output_tokens; self.workers={}; self.locks={}; self.receipts=[]
 
     def __enter__(self):
@@ -51,7 +62,7 @@ class Coordinator:
             for cluster,n in [('remote',self.nremote),('local',self.nlocal)]:
                 for i in range(n):
                     name=f'{cluster}-{i}'; role='decode' if cluster=='local' and i else 'prefill'
-                    config={**self.config,'role':role,'cache_path':str(self.path/(name+'.sqlite'))}
+                    config={**self.config,'local_rdma_address':self.config['local_rdma_address'] if cluster=='local' else None,'role':role,'cache_path':str(self.path/(name+'.sqlite'))}
                     worker=self.stack.enter_context(WorkerProcess(config)); self.workers[name]=worker
                     self.locks[name]=threading.Lock(); info=worker.info
                     self.directory.register(cluster,name,CacheClient(info['cache_url'],info['namespace'],self.config['token'],timeout=120,max_body_bytes=self.config['cache_bytes']*2))
@@ -68,6 +79,9 @@ class Coordinator:
                 measured=Profile(**raw['profile']); self.measured=measured
                 rows=raw['rows']; batch=1
                 step=max(r['decode_step_seconds'] for r in rows if r.get('batch',1)==batch)
+                if self.decode_calibration:
+                    batch = self.decode_calibration['batch_max']
+                    step = self.decode_calibration['decode_step_s']
                 self.controller=Controller(EmpiricalWorkload([measured.lengths[0]],low=measured.lengths[0],high=measured.lengths[-1]),
                     measured,measured,self.nremote,self.nlocal,self.bandwidth,batch,step,self.output_tokens,
                     [0,*measured.lengths],long_interval=5)
@@ -163,8 +177,10 @@ class Coordinator:
                         moved=migration.bytes_transferred
                         migration_elapsed=time.perf_counter()-before
                     self.receipts.append(asdict(migration))
+                rdma = bool(self.config['local_rdma_address'] and placement.target=='local')
+                endpoint = 'rdma_receiver' if rdma else 'receiver'
                 pref=self.workers[producer].call('prefill',request=request,tokens=tokens,
-                    destination=self.workers[decoder].info['receiver'],destination_prefix=destination['prefix_tokens'],
+                    rdma=rdma,destination=self.workers[decoder].info[endpoint],destination_prefix=destination['prefix_tokens'],
                     rate_limit=placement.target=='remote')
                 with self.control_lock: self.observations.append(len(tokens)-pref['prefix_tokens'])
                 if placement.target=='remote':
@@ -174,14 +190,14 @@ class Coordinator:
                 with self.control_lock:
                     production.close()
                     self.locks[producer].release(); acquired.remove(producer)
-                self.workers[decoder].call('consume',request=request,first_token=pref['first_token'])
+                self.workers[decoder].call('consume',rdma=rdma,request=request,first_token=pref['first_token'])
                 ttft=time.perf_counter()-start
                 decoded=self.workers[decoder].call('decode',request=request,output_tokens=output_tokens)
                 return dict(ttft_s=ttft,total_s=time.perf_counter()-start,decode_s=decoded['decode_s']+decoded['batch_queue_s'],
                     batch_size=decoded['batch_size'],batch_queue_s=decoded['batch_queue_s'],
                     generated_tokens=decoded['generated_tokens'],transferred_bytes=moved,target=placement.target,
                     prefix_tokens=pref['prefix_tokens'],destination_prefix_tokens=destination['prefix_tokens'],
-                    migration=asdict(migration) if migration else None,prefill=pref,telemetry=telemetry,
+                    migration=asdict(migration) if migration else None,handoff_transport='rdma' if rdma else 'tcp',prefill=pref,telemetry=telemetry,
                     producer=producer,decoder=decoder,worker_pids={n:self.workers[n].info['pid'] for n in (producer,decoder)})
         except Exception as error:
             if getattr(error,'transport_stats',None): self.monitor.record(error.transport_stats)
@@ -200,9 +216,29 @@ class Coordinator:
         with self.control_lock:
             nodes=[n for n in self.roles.available('decode') if self.roles.active[n]<self.config['max_batch']]
             node=next((n for n in nodes if self.directory._client(('local',n),self.namespace).match_length(tokens)==len(tokens)),None)
+            replica = None
+            if node is None and nodes:
+                # A hot decoder has no free slots. Replicate its checkpoint onto an idle decoder.
+                saturated = [n for n in self.roles.available('decode')
+                             if self.roles.active[n] >= self.config['max_batch']]
+                source = next((n for n in saturated if
+                               self.directory._client(('local',n),self.namespace).match_length(tokens)==len(tokens)), None)
+                node = next((n for n in nodes if self.roles.active[n]==0 and
+                             n not in self.replications), None) if source else None
+                if node:
+                    replica = ('local', source)
+                    self.replications.add(node)
+                    reservation.callback(self._finish_replication, node)
             if node is None: return None
             reservation.enter_context(self.roles.acquire(node,'decode'))
         with reservation:
+            if replica:
+                try:
+                    copy = self.migrate_prefix(replica, ('local',node), tokens)
+                except (ConnectionError, MemoryError):
+                    return None
+                if copy['length'] != len(tokens) or copy['status'] not in ('already_cached','transferred'):
+                    return None
             reservation.callback(self._discard,node,request)
             prepared=self.workers[node].call('prepare',request=request,tokens=tokens)
             if prepared['prefix_tokens']!=len(tokens): return None
@@ -214,8 +250,12 @@ class Coordinator:
                 decode_s=decoded['decode_s']+decoded['batch_queue_s'],batch_size=decoded['batch_size'],
                 batch_queue_s=decoded['batch_queue_s'],generated_tokens=decoded['generated_tokens'],
                 transferred_bytes=0,target='local',prefix_tokens=len(tokens),destination_prefix_tokens=len(tokens),
-                migration=None,producer=None,decoder=node,worker_pids={node:self.workers[node].info['pid']},
+                migration=copy if replica else None,handoff_transport='cache',producer=None,decoder=node,worker_pids={node:self.workers[node].info['pid']},
                 prefill={'cache_hit':True,'prefill_s':0,'sender':{'bytes':0},'pipelined':False,'layer_ready_s':[]})
+
+    def _finish_replication(self, node):
+        with self.control_lock:
+            self.replications.discard(node)
 
     def _discard(self,node,request):
         try: self.workers[node].call('discard',request=request)
@@ -251,6 +291,6 @@ class Coordinator:
         with self.locks[node]: return self.workers[node].call('reference',tokens=tokens,output_tokens=output_tokens)
 
     def stats(self):
-        return {'workers':{n:w.call('stats') for n,w in self.workers.items()},'roles':dict(self.roles.roles),
+        return {'decode_calibration':self.decode_calibration,'workers':{n:w.call('stats') for n,w in self.workers.items()},'roles':dict(self.roles.roles),
                 'role_history':self.roles.history,'telemetry':self.monitor.snapshot(self.rate.stats()['pending_reservations']),'rate':self.rate.stats(),
                 'outstanding_requests':self.queue,'migrations':self.receipts}

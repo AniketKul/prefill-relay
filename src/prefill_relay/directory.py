@@ -1,12 +1,11 @@
 """Live cache-aware placement and budgeted replication across cache nodes."""
 from dataclasses import dataclass
-import hashlib
 import math
 import threading
 
 from .analytics import count
 from .cache import Match
-from .cache_service import prepare_delta, restore_delta, _json_bytes
+from .cache_service import block_hashes, prepare_delta, restore_delta, _json_bytes
 
 
 @dataclass(frozen=True)
@@ -85,11 +84,14 @@ class GlobalDirectory:
         tokens = tuple(tokens)
         length = sender.match_length(tokens)
         if not length: return Migration(source, target)
-        cached = receiver.match(tokens[:length])
-        if cached.length == length:
+        if hasattr(receiver, 'known'):
+            inventory = receiver.known(tokens[:length])
+            cached_length, known = inventory['length'], inventory['hashes']
+        else:
+            cached = receiver.match(tokens[:length])
+            cached_length, known = cached.length, block_hashes(cached)
+        if cached_length == length:
             return Migration(source, target, length, status='already_cached')
-        known = {group: [hashlib.sha256(value).hexdigest() for value in values]
-                 for group, values in cached.full.items()}
         if hasattr(sender, 'prepare_delta'):
             prepared = sender.prepare_delta(tokens, known, budget_bytes, rate_limit=source[0] != target[0])
         else:
@@ -101,18 +103,23 @@ class GlobalDirectory:
             payload_bytes = len(_json_bytes(prepared['delta']))
             if payload_bytes != prepared['payload_bytes'] or payload_bytes > budget_bytes:
                 raise ValueError('delta payload size does not match its budget')
-            match = restore_delta(prepared['delta'], cached)
-            if not 0 < match.length <= len(tokens) or match.length != prepared['length']:
+            length = prepared['length']
+            if not 0 < length <= len(tokens) or prepared['delta']['length'] != length:
                 raise ValueError('delta checkpoint length mismatch')
-            receiver.put(tokens[:match.length], match.full, match.recurrent)
-            received = receiver.match(tokens[:match.length])
-            if received != match: raise RuntimeError('receiver did not retain the complete checkpoint')
+            if hasattr(receiver, 'apply_delta'):
+                if receiver.apply_delta(tokens[:length], prepared['delta'], known) != length:
+                    raise RuntimeError('receiver did not verify the checkpoint')
+            else:
+                match = restore_delta(prepared['delta'], cached, known)
+                receiver.put(tokens[:length], match.full, match.recurrent)
+                if receiver.match(tokens[:length]) != match:
+                    raise RuntimeError('receiver did not retain the complete checkpoint')
             sender.complete_transfer(handle, acknowledged=True)
         except BaseException:
             try: sender.abort_transfer(handle)
             except (KeyError, ConnectionError): pass
             raise
-        return Migration(source, target, match.length, payload_bytes, 'transferred')
+        return Migration(source, target, length, payload_bytes, 'transferred')
 
     def rebalance(self, namespace, tokens, loads=None, budget_bytes=0, allow_cross_cluster=False):
         """Copy a hot prefix from the busiest holder to an emptier eligible node."""

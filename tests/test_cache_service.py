@@ -165,6 +165,8 @@ class CacheServiceTests(unittest.TestCase):
         directory.register('east', 'warm', warm)
         # Fail if the coordinator downloads, re-uploads, or re-fetches source payloads.
         with patch.object(source, 'match', side_effect=AssertionError('full source fetch')), \
+             patch.object(warm, 'match', side_effect=AssertionError('full target fetch')), \
+             patch.object(warm, 'put', side_effect=AssertionError('full target upload')), \
              patch.object(source, 'stage_transfer', side_effect=AssertionError('source upload')), \
              patch.object(source, 'transfer_payload', side_effect=AssertionError('second source download')):
             cold_receipt = directory.migrate(('west', 'source'), ('west', 'cold'), 'model-a', tokens, 8192)

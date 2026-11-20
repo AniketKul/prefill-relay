@@ -82,7 +82,12 @@ def prepare_delta(cache, tokens, known_blocks, budget_bytes, rate_limiter=None, 
         raise
 
 
-def restore_delta(delta, cached):
+def block_hashes(match):
+    return {group: [hashlib.sha256(block).hexdigest() for block in blocks]
+            for group, blocks in match.full.items()}
+
+
+def restore_delta(delta, cached, expected=None):
     """Reconstruct a complete checkpoint from a delta and retained local bytes."""
     if not isinstance(delta, dict) or not isinstance(delta.get('full'), dict):
         raise ValueError('invalid delta manifest')
@@ -93,6 +98,10 @@ def restore_delta(delta, cached):
         for index, value in enumerate(encoded):
             if value is None:
                 if index >= len(known): raise ValueError('delta references an unavailable local block')
+                if expected is not None:
+                    hashes = expected.get(group, [])
+                    if index >= len(hashes) or hashlib.sha256(known[index]).hexdigest() != hashes[index]:
+                        raise ValueError('cached block changed during migration')
                 value = base64.b64encode(known[index]).decode('ascii')
             values.append(value)
         full[group] = values
@@ -193,9 +202,19 @@ class CacheNode:
         cache = self.cache
         if operation == '/info': return cache.stats()
         if operation == '/inventory': return cache.inventory()
-        if operation in ('/match', '/match_length', '/put', '/delete', '/prepare_delta'):
+        if operation in ('/match', '/match_length', '/put', '/delete', '/prepare_delta', '/known', '/apply_delta'):
             tokens = data.get('tokens')
             if not isinstance(tokens, list) or len(tokens) > 1048576: raise ValueError('invalid tokens')
+            if operation == '/known':
+                match = cache.match(tokens)
+                return dict(length=match.length, hashes=block_hashes(match))
+            if operation == '/apply_delta':
+                if not isinstance(data.get('known'), dict): raise ValueError('expected block digests')
+                match = restore_delta(data.get('delta'), cache.match(tokens), data['known'])
+                if match.length != len(tokens): raise ValueError('delta checkpoint length mismatch')
+                cache.put(tokens, match.full, match.recurrent)
+                if cache.match(tokens) != match: raise RuntimeError('checkpoint verification failed')
+                return dict(length=match.length)
             if operation == '/match': return encode_match(cache.match(tokens))
             if operation == '/match_length': return dict(length=cache.match_length(tokens))
             if operation == '/delete': return dict(deleted=cache.delete(tokens))
@@ -281,6 +300,10 @@ class CacheClient:
     def put(self, tokens, full, recurrent):
         tokens = list(tokens)
         self._request('/put', tokens=tokens, state=encode_match(Match(len(tokens), full, recurrent)))
+    def known(self, tokens):
+        return self._request('/known', tokens=list(tokens))
+    def apply_delta(self, tokens, delta, known):
+        return self._request('/apply_delta', tokens=list(tokens), delta=delta, known=known)['length']
     def delete(self, tokens): return self._request('/delete', tokens=list(tokens))['deleted']
     def stage_transfer(self, payload):
         return self._request('/stage', payload=base64.b64encode(payload).decode('ascii'))['handle']

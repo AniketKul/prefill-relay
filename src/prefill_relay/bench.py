@@ -82,6 +82,8 @@ def main():
     parser.add_argument('--cache-gib',type=float,default=4)
     parser.add_argument('--block-tokens',type=int,default=16)
     parser.add_argument('--warm-rounds',type=int,default=0)
+    parser.add_argument('--local-rdma',action='store_true',help='use host-memory RDMA for local handoff; set PREFILL_RELAY_RDMA_ADDRESS to the local interface IPv4')
+    parser.add_argument('--calibrate-tps', type=float, help='cap decode batches to the largest profiled size meeting this per-sequence rate at every profile length')
     parser.add_argument('--remote-workers',type=int,default=1)
     args=parser.parse_args()
     if args.requests<1 or any(n<1 for n in args.lengths): parser.error('positive requests and lengths required')
@@ -93,8 +95,12 @@ def main():
     prompts=[(seed*((n+len(seed)-1)//len(seed)))[:n] for n in args.lengths]
     bandwidth=args.bandwidth_mib*2**20
     profile=json.loads(args.profile.read_text()) if args.profile else None
+    import os
+    local_rdma_address = os.environ.get('PREFILL_RELAY_RDMA_ADDRESS') if args.local_rdma else None
+    if args.local_rdma and not local_rdma_address:
+        parser.error('--local-rdma requires PREFILL_RELAY_RDMA_ADDRESS')
     with tempfile.TemporaryDirectory(prefix='prefill-relay-') as cache, Coordinator(cache,
-            backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
+            local_rdma_address=local_rdma_address,decode_slo_tps=args.calibrate_tps,backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
             bandwidth_bytes_s=bandwidth,profile=profile,output_tokens=args.output_tokens,
             cache_bytes=int(args.cache_gib*2**30),remote_workers=args.remote_workers,batch_wait_s=.02 if args.scenario=='validate' else .005,block_tokens=args.block_tokens) as service:
         result={'kind':'measured independent processes on one shared host/device; application-rate emulation',

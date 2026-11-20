@@ -48,6 +48,12 @@ class ModelWorker:
         self.rate_limiter=lambda size:rate_client(config['rate_url'],self.token,size)
         self.node=stack.enter_context(CacheNode(self.pool,token=self.token,max_body_bytes=config.get('cache_bytes',4*2**30)*2,timeout=120,rate_limiter=self.rate_limiter))
         self.receiver=stack.enter_context(Receiver(max_bytes=config.get('receive_bytes',4*2**30),timeout=120))
+        self.rdma_receiver = None
+        if config.get('local_rdma_address'):
+            from .rdma import RDMAServer
+            self.rdma_receiver = stack.enter_context(Receiver(
+                host=config['local_rdma_address'], server_class=RDMAServer,
+                max_bytes=config.get('receive_bytes',4*2**30), timeout=120))
         self.connections=config.get('connections',4)
         from .batch_decode import BatchDecoder
         self.batcher=BatchDecoder(self.backend,self.lock,max_batch=config.get('max_batch',4),wait_s=config.get('batch_wait_s',.005))
@@ -62,6 +68,7 @@ class ModelWorker:
         op=data['operation']; backend=self.backend
         if op=='health':
             return dict(role=self.role,cache_url=self.node.url,namespace=self.pool.namespace,
+                rdma_receiver=list(self.rdma_receiver.address) if self.rdma_receiver else None,
                 receiver=list(self.receiver.address),vocab_size=backend.vocab_size,
                 model_id=backend.model_id,revision=backend.revision,kernels=getattr(backend,'kernel_provenance',{}),pid=__import__('os').getpid())
         if op=='decode':
@@ -75,7 +82,10 @@ class ModelWorker:
                 if data['role'] not in ('prefill','decode'): raise ValueError('invalid role')
                 self.role=data['role']; return {'role':self.role}
             if op=='discard':
-                self.pending.pop(data['request'],None); self.receiver.discard(data['request']); return {}
+                self.pending.pop(data['request'],None)
+                self.receiver.discard(data['request'])
+                if self.rdma_receiver: self.rdma_receiver.discard(data['request'])
+                return {}
             if op=='clear':
                 if self.pending: raise RuntimeError('cannot reset active worker')
                 for entry in self.pool.inventory(): self.pool.delete(entry['tokens'])
@@ -97,8 +107,12 @@ class ModelWorker:
                 prefix=0 if state is None else int(state['length'])
                 tensor=self.torch.tensor(tokens[prefix:],dtype=self.torch.int64,device=backend.device)
                 self.sync(); start=time.perf_counter(); ready=[]
+                connector = None
+                if data.get('rdma'):
+                    from .rdma import connect
+                    connector = connect
                 with StreamSender(tuple(data['destination']),data['request'],min(self.connections,self.pool.capacity_blocks),pool=self.pool,
-                        timeout=120,rate_limiter=self.rate_limiter if data.get('rate_limit') else None) as sender:
+                        timeout=120,connect=connector,rate_limiter=self.rate_limiter if data.get('rate_limit') else None) as sender:
                     def on_layer(i,layer):
                         ready.append(time.perf_counter())
                         sender.submit_blob(str(i),backend.encode(backend.delta(layer,data['destination_prefix'])),
@@ -123,7 +137,8 @@ class ModelWorker:
                 request=data['request']
                 if request not in self.pending: raise ValueError('missing decode reservation')
                 base=self.pending.pop(request)
-                frames=assemble_chunks(self.receiver.take(request))
+                receiver = self.rdma_receiver if data.get('rdma') else self.receiver
+                frames=assemble_chunks(receiver.take(request))
                 if set(frames)!={str(i) for i in range(backend.layers)}: raise ValueError('incomplete layers')
                 change={}
                 for i in range(backend.layers): change.update(backend.decode(frames[str(i)]))
