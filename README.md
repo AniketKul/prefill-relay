@@ -37,6 +37,8 @@ uv run --locked --extra trained prefill-relay bench \
 
 This starts independent model workers, transfers real state, and compares generated tokens against an unsplit reference. Validation exercises cold and complete cache hits, prefix continuation, local and remote prefill, concurrent decoding, and link unavailability.
 
+The optional [CUDA graph decoder with reserved KV](docs/reserved-decode.md) sustained at least 41.90 tokens/s at batch one in the five-length H100 backend calibration. The serving benchmark measures request-level goodput separately.
+
 An optional [CUDA convolution extra](docs/cuda-kernels.md) provides a tested source build against the locked Torch ABI.
 
 For a smaller CPU or GPU correctness backend:

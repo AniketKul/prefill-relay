@@ -30,7 +30,7 @@ The slowest measured median across 128, 1,024, 8,192, 32,768 and 131,072 tokens 
 | 3 | 29.34 | 34.08 |
 | 4 | 29.82 | 33.54 |
 
-At 40 tokens/s, no tested batch met the target across every sampled context. There is no feasible calibrated throughput or TTFT estimate for this target.
+With eager decode at 40 tokens/s, no tested batch met the target across every sampled context. This eager profile therefore has no calibrated throughput or TTFT estimate at that target. The [reserved-KV CUDA graph profile](reserved-decode.md) qualifies batch one at 40 tokens/s and produces a separate capacity estimate.
 
 At 25 tokens/s, batch 4 satisfied the isolated decode criterion. The capacity calculation evaluated 4,008 threshold/allocation pairs. All policies receive the same modeled 0.838 requests/s in the TTFT simulation.
 
