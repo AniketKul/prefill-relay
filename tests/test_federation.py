@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import importlib.util
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,10 +11,12 @@ from prefill_relay.runtime import Coordinator
 
 @unittest.skipUnless(importlib.util.find_spec('torch'), 'requires gpu extra')
 class FederationTests(unittest.TestCase):
+    device = os.environ.get('PREFILL_RELAY_FEDERATION_DEVICE', 'cpu')
+
     def test_cross_site_handoff_affinity_outage_and_return_path(self):
         with tempfile.TemporaryDirectory() as root:
-            a = Coordinator(Path(root)/'a', bandwidth_bytes_s=200*2**20, threshold=8)
-            b = Coordinator(Path(root)/'b', bandwidth_bytes_s=100*2**20, threshold=8)
+            a = Coordinator(Path(root)/'a', device=self.device, bandwidth_bytes_s=200*2**20, threshold=8)
+            b = Coordinator(Path(root)/'b', device=self.device, bandwidth_bytes_s=100*2**20, threshold=8)
             with Federation({'a': a, 'b': b}) as service:
                 tokens = list(range(48))
                 first = service.run(tokens, 3, 'all-remote', pd_site='b')
@@ -75,8 +78,8 @@ class FederationTests(unittest.TestCase):
                                 'kv_bytes': [2048, 20480]},
                     'rows': [{'batch': 1, 'decode_step_seconds': .02}]}
         with tempfile.TemporaryDirectory() as root:
-            a = Coordinator(Path(root)/'a', profile=profile(.2), output_tokens=2)
-            b = Coordinator(Path(root)/'b', profile=profile(.5), output_tokens=2)
+            a = Coordinator(Path(root)/'a', device=self.device, profile=profile(.2), output_tokens=2)
+            b = Coordinator(Path(root)/'b', device=self.device, profile=profile(.5), output_tokens=2)
             with Federation({'a': a, 'b': b}) as service:
                 _, controller = service.routes['a', 'b']
                 _, producer_profile, pd_profile, _, _ = controller.args
@@ -86,3 +89,24 @@ class FederationTests(unittest.TestCase):
                 row = service.run(list(range(64)), 2, pd_site='a')
                 self.assertEqual(row['generated_tokens'], b.reference(list(range(64)), 2)['generated_tokens'])
                 self.assertIsNotNone(controller.last_long)
+
+    @unittest.skipUnless(os.environ.get('PREFILL_RELAY_FEDERATION_TRAINED') == '1',
+                         'enable trained federation validation explicitly')
+    def test_trained_cross_site_reference_and_full_hit(self):
+        options = dict(backend='hf', device=self.device, model_id='Qwen/Qwen3.5-0.8B',
+                       revision='2fc06364715b967f1860aea9cf38778875588b17')
+        with tempfile.TemporaryDirectory() as root:
+            a = Coordinator(Path(root)/'a', bandwidth_bytes_s=1024*2**20, **options)
+            b = Coordinator(Path(root)/'b', bandwidth_bytes_s=512*2**20, **options)
+            with Federation({'a': a, 'b': b}) as service:
+                tokens = [11, 22, 33, 44] * 16
+                expected = b.reference(tokens, 4)['generated_tokens']
+                row = service.run(tokens, 4, 'all-remote', pd_site='b')
+                self.assertEqual((row['producer_site'], row['pd_site']), ('a', 'b'))
+                self.assertEqual(row['generated_tokens'], expected)
+                self.assertEqual(row['transferred_bytes'], a.rate.stats()['bytes'])
+                self.assertGreater(row['transferred_bytes'], 0)
+                warm = service.run(tokens, 4)
+                self.assertEqual((warm['pd_site'], warm['producer_site']), ('b', None))
+                self.assertEqual(warm['transferred_bytes'], 0)
+                self.assertEqual(warm['generated_tokens'], expected)

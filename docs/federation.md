@@ -32,3 +32,12 @@ Placement first chooses a PD site. A complete match on a decoder takes priority,
 `producer_site` and `pd_site` identify the site for each side of the returned handoff. A complete decoder cache hit returns `producer_site=None`. The same producer workers, locks and source egress budget are shared by requests to all PD destinations. Bandwidth configurations represent explicit per-site outbound budgets. When circuits share a physical link, allocate per-site caps whose sum fits that link. A site's local and remote workers share its configured reservation clock for outbound transfers. Update a site's budget with `sites[name].set_bandwidth(bytes_per_second)`. The global directory names its two worker pools `name/local` and `name/remote`.
 
 The six-worker CPU regression exercises both cross-site directions, global cache affinity, cross-site prefix migration, concurrent PD destinations sharing a producer, and zero-bandwidth fallback. It compares generated tokens with local reference inference and checks the source rate counters. This is a logical multi-cluster deployment on one host.
+
+
+Run the regression on CUDA with the optional pinned trained-model handoff:
+
+```bash
+PREFILL_RELAY_FEDERATION_DEVICE=cuda PREFILL_RELAY_FEDERATION_TRAINED=1 \
+  uv run --locked --extra trained --extra cuda-kernels \
+  python -m unittest discover -s tests -p test_federation.py -v
+```
