@@ -104,23 +104,26 @@ class Capacity:
     egress_bytes_s: float
 
 
-def capacity(p,mean_long,mean_short,remote_profile,local_profile,n_remote,n_prefill,n_decode,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens):
+def capacity(p,mean_long,mean_short,remote_profile,local_profile,n_remote,n_prefill,n_decode,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens,*,miss_fraction=1.):
+    if not math.isfinite(miss_fraction) or not 0<=miss_fraction<=1:
+        raise ValueError("miss fraction must be in [0,1]")
     if not math.isfinite(p) or not 0<=p<=1: raise ValueError('p must be in [0,1]')
     for v,n in [(n_remote,'remote'),(n_prefill,'prefill'),(n_decode,'decode')]: count(v,n)
     positive(bandwidth_bytes_s,'bandwidth',zero=True)
     count(batch_max,'batch',zero=False); positive(decode_step_s,'decode step'); count(output_tokens,'output tokens',zero=False)
     remote=local=kv=0.
-    if p:
+    remote_share,local_share=miss_fraction*p,miss_fraction*(1-p)
+    if remote_share:
         seconds,kv=remote_profile.at(mean_long)
         remote=min(n_remote/seconds,bandwidth_bytes_s/kv)
-    if p<1:
+    if local_share:
         seconds,_=local_profile.at(mean_short)
         local=n_prefill/seconds
     decode=n_decode*batch_max/(decode_step_s*output_tokens)
-    remote_limit=remote/p if p else math.inf
-    local_limit=local/(1-p) if p<1 else math.inf
+    remote_limit=remote/remote_share if remote_share else math.inf
+    local_limit=local/local_share if local_share else math.inf
     total=min(remote_limit,local_limit,decode)
-    return Capacity(remote,local,decode,remote_limit,local_limit,total,total*p*kv)
+    return Capacity(remote,local,decode,remote_limit,local_limit,total,total*remote_share*kv)
 
 
 def grid_search(workload,remote_profile,local_profile,n_remote,n_local,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens,thresholds,prefill_counts=None):
@@ -132,9 +135,10 @@ def grid_search(workload,remote_profile,local_profile,n_remote,n_local,bandwidth
         count(n,'prefill instances')
         if n>=n_local: raise ValueError('at least one decode instance required')
     rows=[]
+    miss_fraction=1-getattr(workload, 'full_hit_fraction', 0.)
     for t in thresholds:
         p,long,short=workload.split(t)
         for n in counts:
-            c=capacity(p,long,short,remote_profile,local_profile,n_remote,n,n_local-n,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens)
+            c=capacity(p,long,short,remote_profile,local_profile,n_remote,n,n_local-n,bandwidth_bytes_s,batch_max,decode_step_s,output_tokens,miss_fraction=miss_fraction)
             rows.append(dict(threshold=t,p=p,mean_long=long,mean_short=short,prefill_instances=n,decode_instances=n_local-n,throughput=c.total,remote_capacity=c.remote,local_capacity=c.local,decode_capacity=c.decode,egress_gbps=c.egress_bytes_s*8/1e9))
     return max(rows,key=lambda r:(r['throughput'], -r['egress_gbps'])), rows

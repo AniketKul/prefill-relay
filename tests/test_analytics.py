@@ -16,6 +16,17 @@ class AnalyticsTests(unittest.TestCase):
         self.assertEqual(kv_rate(100, 2), 50)
         self.assertEqual(required_egress(32, 8, [100, 300], [1, 3]), 400)
 
+    def test_complete_hits_still_consume_decode_capacity(self):
+        from prefill_relay.empirical import EmpiricalWorkload
+        # Each remote miss transfers 100 bytes through a 100-byte/s link.
+        def estimate(samples, batch):
+            row, _ = grid_search(EmpiricalWorkload(samples), self.remote, self.local,
+                                 4, 1, 100, batch, 1, 1, [0])
+            return row['throughput'], row['egress_gbps'] * 1e9 / 8
+        self.assertEqual(estimate([50, 50], 4), (1, 100))
+        self.assertEqual(estimate([0, 50], 4), (2, 100))
+        self.assertEqual(estimate([0, 50], 1), (1, 50))
+
     def test_unused_stages_do_not_limit_capacity(self):
         a = capacity(0, None, 25, self.remote, self.local, 0, 4, 2, 0, 32, .025, 1024)
         b = capacity(1, 75, None, self.remote, self.local, 4, 0, 2, 1000, 32, .025, 1024)
