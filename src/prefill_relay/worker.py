@@ -171,10 +171,10 @@ class ModelWorker:
                 for batch in batches:
                     inputs=vector if batch==1 else vector.unsqueeze(0).repeat(batch,1)
                     logits,state=backend.prefill(inputs)
-                    token=logits.reshape(batch,backend.vocab_size).argmax(-1)
                     if self.decode_graphs:
                         backend.generate(state, 2)
                     else:
+                        token=logits.reshape(batch,backend.vocab_size).argmax(-1)
                         backend.forward(token.reshape(batch,1) if batch>1 else token.reshape(1),state)
                 self.sync(); return {'warmed':True}
             if op=='reference':
