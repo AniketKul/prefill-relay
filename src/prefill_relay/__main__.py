@@ -41,12 +41,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
     p=sub.add_parser('search'); p.add_argument('config',type=Path); p.add_argument('--output',type=Path)
-    for command in ('demo','profile','bench'): sub.add_parser(command,add_help=False)
+    modules = {'demo':'demo','profile':'hf_profile','bench':'bench','kv-profile':'kv_profile',
+               'calibrate':'calibration','capacity-study':'capacity_study'}
+    for command in modules:
+        sub.add_parser(command,add_help=False)
     args,extra=parser.parse_known_args()
-    if args.command in ('demo','profile','bench'):
+    if args.command in modules:
         from importlib import import_module
         import sys
-        module={'demo':'demo','profile':'hf_profile','bench':'bench'}[args.command]
+        module=modules[args.command]
         sys.argv=[sys.argv[0],*extra]; import_module('.'+module,__package__).main(); return
     if extra: parser.error('unrecognized arguments: '+' '.join(extra))
     result,rows=search(json.loads(args.config.read_text()))

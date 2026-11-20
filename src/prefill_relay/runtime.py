@@ -24,7 +24,8 @@ class Coordinator:
     def __init__(self,path,backend='tiny',device='cpu',model_id=None,revision='main',
                  bandwidth_bytes_s=100*2**20,threshold=128,profile=None,output_tokens=8,
                  local_workers=2,remote_workers=1,connections=4,cache_bytes=4*2**30,max_batch=4,batch_wait_s=.005,receive_bytes=4*2**30,block_tokens=16,
-                 local_rdma_address=None, decode_slo_tps=None):
+                 local_rdma_address=None, decode_slo_tps=None, remote_host=None, remote_project='prefill-relay',
+                 remote_device=None, remote_cache_dir=None, remote_profile=None):
         count(local_workers,'local workers',zero=False); count(remote_workers,'remote workers',zero=False)
         for value,name in [(connections,'connections'),(max_batch,'maximum batch'),(output_tokens,'output tokens'),
                            (cache_bytes,'cache bytes'),(receive_bytes,'receive bytes'),(block_tokens,'block tokens')]:
@@ -33,6 +34,10 @@ class Coordinator:
         positive(threshold,'threshold',zero=True)
         if local_workers<2: raise ValueError('at least two local workers required')
         self.path=Path(path).expanduser().resolve(); self.path.mkdir(parents=True,exist_ok=True)
+        self.remote_host, self.remote_profile = remote_host, remote_profile
+        self.ssh_options = dict(project=remote_project, device=remote_device, cache_dir=remote_cache_dir)
+        if remote_profile and not profile:
+            raise ValueError('a remote profile requires a local profile')
         self.decode_calibration = None
         if decode_slo_tps is not None:
             if profile is None: raise ValueError('decode SLO calibration requires a measured profile')
@@ -40,8 +45,17 @@ class Coordinator:
             measured = profile.get('measurements', profile)
             self.decode_calibration = select_decode_batch(measured['rows'], measured.get('decode_context_lengths', measured['profile']['lengths']),
                                                          decode_slo_tps, max_batch)
-            max_batch = self.decode_calibration['batch_max']
-            if not max_batch: raise ValueError('no measured batch meets the requested decode SLO')
+            # Coalescing may return any size from one to the cap on sparse arrivals.
+            contiguous = []
+            for row in self.decode_calibration['by_batch']:
+                if not row['eligible']:
+                    break
+                contiguous.append(row)
+            if not contiguous:
+                raise ValueError('no contiguous decode batch range from one meets the requested decode SLO')
+            max_batch = contiguous[-1]['batch']
+            self.decode_calibration.update(batch_max=max_batch,
+                                           decode_step_s=max(row['worst_step_s'] for row in contiguous))
         self.config=dict(local_rdma_address=local_rdma_address,backend=backend,device=device,model_id=model_id,revision=revision,
                          connections=connections,block_tokens=block_tokens,max_batch=max_batch,batch_wait_s=batch_wait_s,cache_bytes=cache_bytes,receive_bytes=receive_bytes,token=secrets.token_urlsafe(32))
         self.nlocal=local_workers; self.nremote=remote_workers; self.threshold=threshold
@@ -63,7 +77,12 @@ class Coordinator:
                 for i in range(n):
                     name=f'{cluster}-{i}'; role='decode' if cluster=='local' and i else 'prefill'
                     config={**self.config,'local_rdma_address':self.config['local_rdma_address'] if cluster=='local' else None,'role':role,'cache_path':str(self.path/(name+'.sqlite'))}
-                    worker=self.stack.enter_context(WorkerProcess(config)); self.workers[name]=worker
+                    if self.remote_host and cluster == 'remote':
+                        from .ssh_worker import SSHWorker
+                        launcher = SSHWorker(config, host=self.remote_host, **self.ssh_options)
+                    else:
+                        launcher = WorkerProcess(config)
+                    worker=self.stack.enter_context(launcher); self.workers[name]=worker
                     self.locks[name]=threading.Lock(); info=worker.info
                     self.directory.register(cluster,name,CacheClient(info['cache_url'],info['namespace'],self.config['token'],timeout=120,max_body_bytes=self.config['cache_bytes']*2))
             namespaces={w.info['namespace'] for w in self.workers.values()}
@@ -77,13 +96,21 @@ class Coordinator:
                 if raw.get('model',first['model_id'])!=first['model_id'] or raw.get('revision',first['revision'])!=first['revision']:
                     raise ValueError('profile model or revision differs from workers')
                 measured=Profile(**raw['profile']); self.measured=measured
+                remote = measured
+                if self.remote_profile is not None:
+                    other = self.remote_profile.get('measurements', self.remote_profile)
+                    if (other['model'],other['revision']) != (first['model_id'],first['revision']):
+                        raise ValueError('remote profile model or revision differs from workers')
+                    remote = Profile(**other['profile'])
+                    if (remote.lengths[0] > measured.lengths[0] or remote.lengths[-1] < measured.lengths[-1]):
+                        raise ValueError('remote profile must cover the local routing length range')
                 rows=raw['rows']; batch=1
                 step=max(r['decode_step_seconds'] for r in rows if r.get('batch',1)==batch)
                 if self.decode_calibration:
                     batch = self.decode_calibration['batch_max']
                     step = self.decode_calibration['decode_step_s']
                 self.controller=Controller(EmpiricalWorkload([measured.lengths[0]],low=measured.lengths[0],high=measured.lengths[-1]),
-                    measured,measured,self.nremote,self.nlocal,self.bandwidth,batch,step,self.output_tokens,
+                    remote,measured,self.nremote,self.nlocal,self.bandwidth,batch,step,self.output_tokens,
                     [0,*measured.lengths],long_interval=5)
                 self.controller.update(time.monotonic(),self.bandwidth,0,0)
             return self

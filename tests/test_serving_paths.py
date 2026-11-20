@@ -34,6 +34,17 @@ class ServingPaths(unittest.TestCase):
             self.assertEqual(other['generated_tokens'], first['generated_tokens'])
             self.assertFalse(service.replications)
 
+    def test_decode_cap_covers_every_batch_size_the_runtime_can_emit(self):
+        from prefill_relay.runtime import Coordinator
+        profile = {'profile':{'lengths':[128]}, 'rows':[
+            {'batch':b,'length':128,'decode_step_seconds':t} for b,t in [(1,.02),(2,.03),(3,.01)]]}
+        with tempfile.TemporaryDirectory() as path:
+            service = Coordinator(path,profile=profile,decode_slo_tps=40,max_batch=3)
+            self.assertEqual(service.config['max_batch'],1)
+            profile['rows'][0]['decode_step_seconds']=.04
+            with self.assertRaisesRegex(ValueError,'contiguous'):
+                Coordinator(path,profile=profile,decode_slo_tps=40,max_batch=3)
+
     @unittest.skipUnless(os.environ.get('PREFILL_RELAY_RDMA_ADDRESS'), 'requires a local RDMA interface')
     def test_local_rdma_and_remote_tcp_handoff(self):
         from prefill_relay.runtime import Coordinator

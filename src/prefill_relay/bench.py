@@ -15,7 +15,7 @@ def validate_service(service,tokens,output_tokens=8):
     reference=service.reference(tokens,output_tokens)['generated_tokens']
     cold=service.run(tokens,output_tokens,'all-remote')
     assert cold['generated_tokens']==reference, 'independent-process generation differs'
-    assert len(set(cold['worker_pids'].values()))==2, 'prefill and decode share a process'
+    assert service.remote_host or len(set(cold['worker_pids'].values()))==2, 'prefill and decode share a process'
     # Very short prefills can finish before the sender thread is scheduled.
     assert cold['prefill']['sender']['first_send_at'] is not None, 'no state was transmitted'
     warm=service.run(tokens,output_tokens,'all-remote')
@@ -83,6 +83,11 @@ def main():
     parser.add_argument('--block-tokens',type=int,default=16)
     parser.add_argument('--seed',type=int,default=0,help='seed for sampled uncached lengths')
     parser.add_argument('--warm-rounds',type=int,default=0)
+    parser.add_argument('--remote-host',help='OpenSSH host alias for the prefill workers')
+    parser.add_argument('--remote-project',default='prefill-relay')
+    parser.add_argument('--remote-device')
+    parser.add_argument('--remote-cache-dir')
+    parser.add_argument('--remote-profile',type=Path,help='prefill timings for the remote hardware')
     parser.add_argument('--local-rdma',action='store_true',help='use host-memory RDMA for local handoff; set PREFILL_RELAY_RDMA_ADDRESS to the local interface IPv4')
     parser.add_argument('--calibrate-tps', type=float, help='cap decode batches to the largest profiled size meeting this per-sequence rate at every profile length')
     parser.add_argument('--remote-workers',type=int,default=1)
@@ -101,12 +106,14 @@ def main():
     if args.local_rdma and not local_rdma_address:
         parser.error('--local-rdma requires PREFILL_RELAY_RDMA_ADDRESS')
     with tempfile.TemporaryDirectory(prefix='prefill-relay-') as cache, Coordinator(cache,
+            remote_host=args.remote_host,remote_project=args.remote_project,remote_device=args.remote_device,
+            remote_cache_dir=args.remote_cache_dir,remote_profile=json.loads(args.remote_profile.read_text()) if args.remote_profile else None,
             local_rdma_address=local_rdma_address,decode_slo_tps=args.calibrate_tps,backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
             bandwidth_bytes_s=bandwidth,profile=profile,output_tokens=args.output_tokens,
             cache_bytes=int(args.cache_gib*2**30),remote_workers=args.remote_workers,batch_wait_s=.02 if args.scenario=='validate' else .005,block_tokens=args.block_tokens) as service:
-        result={'kind':'measured independent processes on one shared host/device; application-rate emulation',
+        result={'kind':('physical SSH prefill host with local decoding' if args.remote_host else 'independent model processes on one host with application-rate emulation'),
                 'workers':{n:{k:w.info[k] for k in ('model_id','revision','pid','kernels')} for n,w in service.workers.items()},
-                'configuration':{**{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()},'batch_wait_s':service.config['batch_wait_s']}}
+                'configuration':{**{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items() if k not in ('remote_host','remote_project','remote_cache_dir')},'batch_wait_s':service.config['batch_wait_s']}}
         if args.scenario=='validate': result['validation']=validate_service(service,prompts[0],args.output_tokens)
         elif args.scenario=='migration': result['migration']=validate_migration(service,prompts[0],args.output_tokens)
         elif args.scenario=='long':
