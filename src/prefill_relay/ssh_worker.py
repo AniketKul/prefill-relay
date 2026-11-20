@@ -36,11 +36,15 @@ class SSHWorker:
     Existing OpenSSH multiplexed sessions can supply authentication. Only
     forwards established for this worker are cancelled when it exits.
     """
-    def __init__(self, config, *, host, project='prefill-relay', device=None, cache_dir=None):
+    def __init__(self, config, *, host, project='prefill-relay', device=None, cache_dir=None, streams=1):
         if not isinstance(host, str) or not re.fullmatch(r'(?:[\w.][\w.-]*@)?[\w.][\w.-]*', host):
             raise ValueError('expected an SSH host alias, optionally user@alias')
         if not str(project) or str(project).startswith('-'):
             raise ValueError('invalid remote project directory')
+        if type(streams) is not int or not 1 <= streams <= min(64, config.get('connections', 4)):
+            raise ValueError('SSH streams must be between one and the configured connection count')
+        self.streams = streams
+        self.channels = []
         self.config = config
         self.host = host
         self.project = str(project)
@@ -51,23 +55,30 @@ class SSHWorker:
         self.reverse_ports = {}
         self.forward_lock = threading.Lock()
 
-    def control(self, operation, *args, check=True):
-        result = subprocess.run([*self.ssh, '-O', operation, *args, self.host],
+    def control(self, operation, *args, check=True, ssh=None):
+        result = subprocess.run([*(ssh or self.ssh), '-O', operation, *args, self.host],
                                 capture_output=True, text=True, timeout=15)
         # Some OpenSSH versions report a mux forward failure only on stderr.
         if check and (result.returncode or (operation in ('forward', 'cancel') and result.stderr.strip())):
             raise OSError(f'SSH {operation} failed: {result.stderr.strip()}')
         return result
 
-    def _open_master(self):
-        if self.control('check', check=False).returncode == 0:
-            return
-        directory = self.stack.enter_context(tempfile.TemporaryDirectory(prefix='relay-ssh-'))
-        self.ssh += ['-S', str(Path(directory) / 'mux')]
-        subprocess.run([*self.ssh, '-M', '-N', '-f', '-o', 'ControlPersist=no', self.host], check=True, timeout=30)
-        self.stack.callback(self.control, 'exit', check=False)
+    def _new_master(self, base):
+        directory = self.stack.enter_context(tempfile.TemporaryDirectory(prefix='relay-ssh-', dir='/tmp'))
+        command = [*base, '-S', str(Path(directory) / 'mux')]
+        subprocess.run([*command, '-M', '-N', '-f', '-o', 'ControlPersist=no', self.host], check=True, timeout=30)
+        self.stack.callback(self.control, 'exit', ssh=command, check=False)
+        return command
 
-    def _forward(self, direction, destination):
+    def _open_master(self):
+        base = self.ssh
+        if self.control('check', check=False).returncode:
+            self.ssh = self._new_master(base)
+        self.channels = [self.ssh]
+        for _ in range(1, self.streams):
+            self.channels.append(self._new_master(base))
+
+    def _forward(self, direction, destination, ssh=None):
         _port(destination)
         for _ in range(8):
             if direction == '-L':
@@ -78,18 +89,19 @@ class SSHWorker:
                 port = 32768 + secrets.randbelow(28232)
             spec = f'127.0.0.1:{port}:127.0.0.1:{destination}'
             try:
-                self.control('forward', direction, spec)
+                self.control('forward', direction, spec, ssh=ssh)
             except OSError:
                 continue
-            self.stack.callback(self.control, 'cancel', direction, spec, check=False)
+            self.stack.callback(self.control, 'cancel', direction, spec, check=False, ssh=ssh)
             return port
         raise ConnectionError('SSH could not establish the requested loopback port forward')
 
-    def _reverse(self, destination):
+    def _reverse(self, destination, lane=0):
+        key = destination, lane
         with self.forward_lock:
-            if destination not in self.reverse_ports:
-                self.reverse_ports[destination] = self._forward('-R', destination)
-            return self.reverse_ports[destination]
+            if key not in self.reverse_ports:
+                self.reverse_ports[key] = self._forward('-R', destination, self.channels[lane])
+            return self.reverse_ports[key]
 
     def __enter__(self):
         try:
@@ -151,7 +163,10 @@ class SSHWorker:
             host, port = data['destination']
             if host != '127.0.0.1':
                 raise ValueError('remote handoff requires an IPv4 loopback TCP receiver')
-            data['destination'] = [host, self._reverse(_port(port))]
+            ports = [self._reverse(_port(port), lane) for lane in range(self.streams)]
+            data['destination'] = [host, ports[0]]
+            if self.streams > 1:
+                data['ssh_stream_ports'] = ports
         return call(self.info['url'], self.config['token'], operation, **data)
 
     def __exit__(self, *exc):

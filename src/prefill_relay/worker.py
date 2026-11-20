@@ -114,6 +114,9 @@ class ModelWorker:
                 tensor=self.torch.tensor(tokens[prefix:],dtype=self.torch.int64,device=backend.device)
                 self.sync(); start=time.perf_counter(); ready=[]
                 connector = None
+                if data.get('ssh_stream_ports'):
+                    from .transport import ssh_stream_connector
+                    connector = ssh_stream_connector(data['destination'], data['ssh_stream_ports'], self.connections)
                 if data.get('rdma'):
                     from .rdma import connect
                     connector = connect

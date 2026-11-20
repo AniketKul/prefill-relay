@@ -86,6 +86,7 @@ def main():
     parser.add_argument('--remote-host',help='OpenSSH host alias for the prefill workers')
     parser.add_argument('--remote-project',default='prefill-relay')
     parser.add_argument('--remote-device')
+    parser.add_argument('--ssh-streams', type=int, default=1, help='independently authenticated SSH sessions per remote worker')
     parser.add_argument('--remote-cache-dir')
     parser.add_argument('--remote-profile',type=Path,help='prefill timings for the remote hardware')
     parser.add_argument('--local-rdma',action='store_true',help='use host-memory RDMA for local handoff; set PREFILL_RELAY_RDMA_ADDRESS to the local interface IPv4')
@@ -106,7 +107,7 @@ def main():
     if args.local_rdma and not local_rdma_address:
         parser.error('--local-rdma requires PREFILL_RELAY_RDMA_ADDRESS')
     with tempfile.TemporaryDirectory(prefix='prefill-relay-') as cache, Coordinator(cache,
-            remote_host=args.remote_host,remote_project=args.remote_project,remote_device=args.remote_device,
+            remote_host=args.remote_host,remote_project=args.remote_project,remote_device=args.remote_device,ssh_streams=args.ssh_streams,
             remote_cache_dir=args.remote_cache_dir,remote_profile=json.loads(args.remote_profile.read_text()) if args.remote_profile else None,
             local_rdma_address=local_rdma_address,decode_slo_tps=args.calibrate_tps,backend=args.backend,device=args.device,model_id=args.model,revision=args.revision,
             bandwidth_bytes_s=bandwidth,profile=profile,output_tokens=args.output_tokens,

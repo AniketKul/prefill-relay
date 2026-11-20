@@ -203,6 +203,23 @@ class Receiver:
         self.thread.join()
 
 
+def ssh_stream_connector(destination, ports, connections):
+    """Stripe outgoing sockets across private reverse forwards on distinct SSH sessions."""
+    from itertools import cycle
+    host, first_port = destination
+    if (host != '127.0.0.1' or not isinstance(ports, list) or not 1 <= len(ports) <= connections
+            or any(type(p) is not int or not 0 < p <= 65535 for p in ports)
+            or first_port != ports[0] or len(set(ports)) != len(ports)):
+        raise ValueError('expected distinct loopback SSH stream ports')
+    targets = cycle(ports)
+    lock = threading.Lock()
+    def connect(address, timeout):
+        with lock:
+            port = next(targets)
+        return StreamSender._connect_tcp((host, port), timeout)
+    return connect
+
+
 class StreamSender:
     """Submit layers as computed, bounded to one outstanding frame per connection."""
     def __init__(self,address,request,connections=4,pool=None,timeout=10,retries=2,bandwidth_bytes_s=None,rate_limiter=None,connect=None):

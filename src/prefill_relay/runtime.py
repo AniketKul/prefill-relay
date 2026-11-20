@@ -26,7 +26,7 @@ class Coordinator:
                  bandwidth_bytes_s=100*2**20,threshold=128,profile=None,output_tokens=8,
                  local_workers=2,remote_workers=1,connections=4,cache_bytes=4*2**30,max_batch=4,batch_wait_s=.005,receive_bytes=4*2**30,block_tokens=16,
                  local_rdma_address=None, decode_slo_tps=None, remote_host=None, remote_project='prefill-relay',
-                 remote_device=None, remote_cache_dir=None, remote_profile=None):
+                 remote_device=None, remote_cache_dir=None, remote_profile=None, ssh_streams=1):
         count(local_workers,'local workers',zero=False); count(remote_workers,'remote workers',zero=False)
         for value,name in [(connections,'connections'),(max_batch,'maximum batch'),(output_tokens,'output tokens'),
                            (cache_bytes,'cache bytes'),(receive_bytes,'receive bytes'),(block_tokens,'block tokens')]:
@@ -36,7 +36,9 @@ class Coordinator:
         if local_workers<2: raise ValueError('at least two local workers required')
         self.path=Path(path).expanduser().resolve(); self.path.mkdir(parents=True,exist_ok=True)
         self.remote_host, self.remote_profile = remote_host, remote_profile
-        self.ssh_options = dict(project=remote_project, device=remote_device, cache_dir=remote_cache_dir)
+        if type(ssh_streams) is not int or not 1 <= ssh_streams <= connections or (ssh_streams > 1 and not remote_host):
+            raise ValueError('multiple SSH streams require a remote host and enough transport connections')
+        self.ssh_options = dict(project=remote_project, device=remote_device, cache_dir=remote_cache_dir, streams=ssh_streams)
         if remote_profile and not profile:
             raise ValueError('a remote profile requires a local profile')
         self.decode_calibration = None
