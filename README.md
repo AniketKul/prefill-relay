@@ -2,7 +2,7 @@
 
 prefill-relay routes prefill between local and remote worker processes, transfers hybrid attention state over TCP, and decodes locally. It includes a trained model backend, persistent prefix caching, bandwidth-aware placement, decoder batching, and arrival-driven benchmarks.
 
-The supplied deployment runs logical clusters on **one host and one shared GPU**. Network bandwidth is paced at the application layer. This makes the full software path executable without implying independent cluster capacity or physical network measurements.
+The default deployment runs prefill and decode processes on one host and one shared GPU. The coordinator can also launch prefill on a separate SSH host. Remote traffic uses TCP with an aggregate bandwidth budget. On a host with a configured RDMA interface, local workers can hand state to one another over RoCE.
 
 ## Quick start
 
@@ -69,6 +69,6 @@ See [verified H100 results](docs/validation.md) for the completed checks and mea
 
 [The initial trained validation](docs/results/pretrained-initial.json) preserved transported state and decode logits exactly. Recomputing the prompt from a saved bf16 prefix produced a maximum logit difference of 0.15625 in that case, while preserving the next token. Exact wire transport does not imply bitwise equality between different floating-point execution shapes.
 
-The worker launcher is a single-host deployment. Multi-host orchestration, heterogeneous fleets, physical WAN/RDMA measurements, unavailable model weights, and production availability guarantees are outside the supplied evidence. Capacity estimates that multiply logical worker counts are not measured throughput of independent GPUs.
+The [two-host launcher](docs/ssh-worker.md) supports a remote producer with its own device and prefill profile. The [capacity study](docs/capacity-study.md) measures decode batch sizes and compares projected throughput, egress and latency at equal cost. The [dense and hybrid profiles](docs/dense-profile.md) measure actual cache bytes and prefill time at four lengths through 128K. Independent GPU fleets, a physical WAN and production availability remain outside the measurements.
 
 Control and cache services use bearer authentication on loopback. Raw tensor transport assumes a trusted network and provides neither authentication nor encryption. Keep these services private; no internet-facing serving interface is provided.

@@ -11,3 +11,11 @@ To check a remote checkout directly, set `PREFILL_RELAY_SSH_HOST` to an SSH alia
 ```bash
 uv run --locked --extra gpu python -m unittest discover -s tests -p test_ssh_worker.py -v
 ```
+
+Through the CLI, set the local decode device separately from the remote prefill device. The host alias below is a placeholder.
+
+```bash
+uv run --locked --extra gpu prefill-relay bench --backend tiny --device cpu \
+  --remote-host gpu-lab --remote-project prefill-relay --remote-device cuda \
+  --scenario validate --lengths 67 --output docs/results/local-run/ssh.json
+```
