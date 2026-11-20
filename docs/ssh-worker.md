@@ -19,3 +19,10 @@ uv run --locked --extra gpu prefill-relay bench --backend tiny --device cpu \
   --remote-host gpu-lab --remote-project prefill-relay --remote-device cuda \
   --scenario validate --lengths 67 --output docs/results/local-run/ssh.json
 ```
+
+The trained physical handoff check uses a fixed 12-token prompt and compares an eight-token cold and warm continuation against the unsplit remote producer. Set `PREFILL_RELAY_SSH_HOST` to the configured SSH alias and run the following on the CPU decoder host.
+
+```bash
+PREFILL_RELAY_TRAINED_MODEL=Qwen/Qwen3.5-0.8B PREFILL_RELAY_REMOTE_DEVICE=cuda \
+  uv run --locked --extra trained python -m unittest discover -s tests -p test_cross_host_trained.py -v
+```
