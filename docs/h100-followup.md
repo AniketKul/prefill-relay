@@ -9,7 +9,8 @@ The results below use one H100 PCIe 80 GB. The trained serving runs use Qwen3.5-
 | [128K end-to-end handoff](results/followup-long.json) | The cold 131,072-token request transferred 1,656,048,772 bytes, with 74.77 s to first token. All four generated tokens matched unsplit inference. |
 | [Incremental migration](results/followup-migration.json) | Extending an 8,192-token destination checkpoint to 16,384 tokens transferred 161,472,631 bytes. A cold migration of the same state used 295,754,359 bytes. |
 | [Dense and hybrid prefill](dense-profile.md) | At 131,072 tokens the dense 2B model produced 10.00 GiB of state and the hybrid 0.8B model 1.52 GiB. Model sizes and architectures differ. |
-| [Decode calibration](capacity-study.md) | Across five context lengths and batches 1–4, no batch met 40 tokens/s at every length. At batch 1 the slowest median was 39.03 tokens/s. Batch 4 qualified at 25 tokens/s. |
+| [Feed-forward CUDA graphs](decode-graphs.md) | The independent batch-one calibration exceeded 40 tokens/s at 128, 1,024, 8,192 and 32,768 tokens. The 131,072-token median was 32.55 tokens/s. |
+| [Eager decode calibration](capacity-study.md) | Across five context lengths and batches 1–4, no batch met 40 tokens/s at every length. At batch 1 the slowest median was 39.03 tokens/s. Batch 4 qualified at 25 tokens/s. |
 
 The [service](results/followup-service-receipt.json), [long-context](results/followup-long-receipt.json) and [migration](results/followup-migration-receipt.json) receipts identify the tested source, commands and raw output by SHA-256. The [capacity study](capacity-study.md) uses single-device measurements to calculate fleet throughput and queue latency. The local RoCE test uses a single server. Geographically separate GPU clusters, production traffic and availability are outside these measurements.
 
