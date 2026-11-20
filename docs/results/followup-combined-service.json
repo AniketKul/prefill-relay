@@ -1,0 +1,1125 @@
+{
+  "kind": "independent model processes on one host with application-rate emulation",
+  "workers": {
+    "remote-0": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 1988672,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      },
+      "decode_graphs": false
+    },
+    "local-0": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 1991144,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      },
+      "decode_graphs": true
+    },
+    "local-1": {
+      "model_id": "Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "pid": 1993198,
+      "kernels": {
+        "causal_conv1d_version": "1.5.3.post1",
+        "prefill_convolution": "transformers.models.qwen3_5.modeling_qwen3_5",
+        "decode_convolution": "transformers.models.qwen3_5.modeling_qwen3_5"
+      },
+      "decode_graphs": true
+    }
+  },
+  "configuration": {
+    "backend": "hf",
+    "device": "cuda",
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "profile": "docs/results/h100-combined-decode-calibration.json",
+    "output": "docs/results/followup-combined-service.json",
+    "scenario": "validate",
+    "lengths": [
+      67
+    ],
+    "requests": 12,
+    "output_tokens": 8,
+    "rate": 2,
+    "bandwidth_mib": 100,
+    "cache_gib": 4,
+    "block_tokens": 16,
+    "seed": 0,
+    "warm_rounds": 0,
+    "remote_device": null,
+    "ssh_streams": 1,
+    "remote_profile": null,
+    "local_rdma": true,
+    "reserve_decode_kv": true,
+    "decode_graphs": true,
+    "calibrate_tps": 40.0,
+    "remote_workers": 1,
+    "batch_wait_s": 0.02
+  },
+  "validation": {
+    "reference_tokens": [
+      357,
+      59493,
+      8978,
+      25105,
+      11173,
+      33303,
+      13,
+      220
+    ],
+    "cold": {
+      "ttft_s": 0.6962336078286171,
+      "total_s": 1.7099592685699463,
+      "decode_s": 1.0098779946565628,
+      "batch_size": 1,
+      "batch_queue_s": 0.00034063681960105896,
+      "generated_tokens": [
+        357,
+        59493,
+        8978,
+        25105,
+        11173,
+        33303,
+        13,
+        220
+      ],
+      "transferred_bytes": 21106084,
+      "target": "remote",
+      "prefix_tokens": 0,
+      "destination_prefix_tokens": 0,
+      "migration": null,
+      "handoff_transport": "tcp",
+      "prefill": {
+        "first_token": 357,
+        "prefix_tokens": 0,
+        "prefill_s": 0.264887910336256,
+        "sender": {
+          "request": "6068a23bcbd04e92948554740da8ff79",
+          "bytes": 21106084,
+          "failures": 0,
+          "queue_depth": 0,
+          "elapsed_s": 0.2945048548281193,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 1.395,
+          "tcp_info_available": true,
+          "first_send_at": 24717221.601161417,
+          "max_queue_depth": 4,
+          "connections_opened": 4,
+          "frames_acked": 24
+        },
+        "stored": true,
+        "pipelined": true,
+        "layer_ready_s": [
+          0.009858548641204834,
+          0.026787884533405304,
+          0.03678465634584427,
+          0.046536047011613846,
+          0.05313880741596222,
+          0.08296600729227066,
+          0.09564154595136642,
+          0.10304339975118637,
+          0.11027191206812859,
+          0.11889341846108437,
+          0.13032593578100204,
+          0.1379411555826664,
+          0.142917662858963,
+          0.16038964316248894,
+          0.17277728766202927,
+          0.18026639893651009,
+          0.18765601888298988,
+          0.1959492601454258,
+          0.20790169015526772,
+          0.2153896503150463,
+          0.22733113169670105,
+          0.23697683215141296,
+          0.25059450417757034,
+          0.2583496943116188
+        ],
+        "compute_end_s": 0.264887910336256
+      },
+      "telemetry": {
+        "bandwidth_bytes_s": 104857600,
+        "utilization": 0.0,
+        "queue_depth": 0,
+        "goodput_bytes_s": 104857600,
+        "failures": 0,
+        "retries": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0
+      },
+      "producer": "remote-0",
+      "decoder": "local-0",
+      "worker_pids": {
+        "remote-0": 1988672,
+        "local-0": 1991144
+      }
+    },
+    "warm": {
+      "ttft_s": 0.06098797917366028,
+      "total_s": 0.23689357936382294,
+      "decode_s": 0.17343450337648392,
+      "batch_size": 1,
+      "batch_queue_s": 0.00026836618781089783,
+      "generated_tokens": [
+        357,
+        59493,
+        8978,
+        25105,
+        11173,
+        33303,
+        13,
+        220
+      ],
+      "transferred_bytes": 0,
+      "target": "local",
+      "prefix_tokens": 67,
+      "destination_prefix_tokens": 67,
+      "migration": null,
+      "handoff_transport": "cache",
+      "producer": null,
+      "decoder": "local-0",
+      "worker_pids": {
+        "local-0": 1991144
+      },
+      "prefill": {
+        "cache_hit": true,
+        "prefill_s": 0,
+        "sender": {
+          "bytes": 0
+        },
+        "pipelined": false,
+        "layer_ready_s": []
+      }
+    },
+    "batched": [
+      {
+        "ttft_s": 1.678092833608389,
+        "total_s": 1.8768912926316261,
+        "decode_s": 0.194820586591959,
+        "batch_size": 1,
+        "batch_queue_s": 0.0003097355365753174,
+        "generated_tokens": [
+          357,
+          59493,
+          8978,
+          25105,
+          11173,
+          33303,
+          13,
+          220
+        ],
+        "transferred_bytes": 31694260,
+        "target": "remote",
+        "prefix_tokens": 67,
+        "destination_prefix_tokens": 67,
+        "migration": null,
+        "handoff_transport": "tcp",
+        "prefill": {
+          "first_token": 357,
+          "prefix_tokens": 67,
+          "prefill_s": 0.3135949745774269,
+          "sender": {
+            "request": "a00d258e93db4e269407e008f352f761",
+            "bytes": 31694260,
+            "failures": 0,
+            "queue_depth": 0,
+            "elapsed_s": 0.345306184142828,
+            "retries": 0,
+            "retransmissions": 0,
+            "rtt_ms": 1.385,
+            "tcp_info_available": true,
+            "first_send_at": 24717224.546080705,
+            "max_queue_depth": 4,
+            "connections_opened": 4,
+            "frames_acked": 24
+          },
+          "stored": true,
+          "pipelined": true,
+          "layer_ready_s": [
+            0.0025685280561447144,
+            0.01030287891626358,
+            0.017861735075712204,
+            0.03275670111179352,
+            0.0383015014231205,
+            0.051898565143346786,
+            0.0703870989382267,
+            0.09104063734412193,
+            0.10059928148984909,
+            0.11657913774251938,
+            0.12587427720427513,
+            0.1415146328508854,
+            0.14784453064203262,
+            0.1604306846857071,
+            0.1759607307612896,
+            0.1838199868798256,
+            0.20115433260798454,
+            0.21197396144270897,
+            0.22920014336705208,
+            0.24524178728461266,
+            0.2528681270778179,
+            0.2644985467195511,
+            0.2875697501003742,
+            0.30291131511330605
+          ],
+          "compute_end_s": 0.3135949745774269
+        },
+        "telemetry": {
+          "bandwidth_bytes_s": 104857600,
+          "utilization": 0.09057701860240151,
+          "queue_depth": 0,
+          "goodput_bytes_s": 71666336.40833548,
+          "failures": 0,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 1.395
+        },
+        "producer": "remote-0",
+        "decoder": "local-0",
+        "worker_pids": {
+          "remote-0": 1988672,
+          "local-0": 1991144
+        }
+      },
+      {
+        "ttft_s": 1.1984995640814304,
+        "total_s": 2.244948212057352,
+        "decode_s": 1.043129201978445,
+        "batch_size": 1,
+        "batch_queue_s": 0.00019111111760139465,
+        "generated_tokens": [
+          357,
+          59493,
+          8978,
+          25105,
+          11173,
+          33303,
+          13,
+          220
+        ],
+        "transferred_bytes": 0,
+        "target": "local",
+        "prefix_tokens": 67,
+        "destination_prefix_tokens": 67,
+        "migration": {
+          "source": [
+            "local",
+            "local-0"
+          ],
+          "target": [
+            "local",
+            "local-1"
+          ],
+          "length": 67,
+          "bytes_transferred": 28120840,
+          "status": "transferred"
+        },
+        "handoff_transport": "cache",
+        "producer": null,
+        "decoder": "local-1",
+        "worker_pids": {
+          "local-1": 1993198
+        },
+        "prefill": {
+          "cache_hit": true,
+          "prefill_s": 0,
+          "sender": {
+            "bytes": 0
+          },
+          "pipelined": false,
+          "layer_ready_s": []
+        }
+      },
+      {
+        "ttft_s": 2.6587890535593033,
+        "total_s": 2.8329557850956917,
+        "decode_s": 0.17054441198706627,
+        "batch_size": 1,
+        "batch_queue_s": 0.000309869647026062,
+        "generated_tokens": [
+          357,
+          59493,
+          8978,
+          25105,
+          11173,
+          33303,
+          13,
+          220
+        ],
+        "transferred_bytes": 31694260,
+        "target": "remote",
+        "prefix_tokens": 67,
+        "destination_prefix_tokens": 67,
+        "migration": null,
+        "handoff_transport": "tcp",
+        "prefill": {
+          "first_token": 357,
+          "prefix_tokens": 67,
+          "prefill_s": 0.29979949072003365,
+          "sender": {
+            "request": "9f1e31b1deeb4d3fbddb99739718bbc3",
+            "bytes": 31694260,
+            "failures": 0,
+            "queue_depth": 0,
+            "elapsed_s": 0.32759081944823265,
+            "retries": 0,
+            "retransmissions": 0,
+            "rtt_ms": 1.021,
+            "tcp_info_available": true,
+            "first_send_at": 24717225.559600305,
+            "max_queue_depth": 4,
+            "connections_opened": 4,
+            "frames_acked": 24
+          },
+          "stored": true,
+          "pipelined": true,
+          "layer_ready_s": [
+            0.002841837704181671,
+            0.011314798146486282,
+            0.02227560430765152,
+            0.031202320009469986,
+            0.03688720613718033,
+            0.05538564175367355,
+            0.0657472237944603,
+            0.07902879267930984,
+            0.08907368034124374,
+            0.10133397579193115,
+            0.11394434422254562,
+            0.1293570064008236,
+            0.13917376846075058,
+            0.15131985396146774,
+            0.16482587158679962,
+            0.179500550031662,
+            0.18938503041863441,
+            0.2069394402205944,
+            0.21892524510622025,
+            0.23836083710193634,
+            0.24625815823674202,
+            0.2599153257906437,
+            0.2720264196395874,
+            0.29025860875844955
+          ],
+          "compute_end_s": 0.29979949072003365
+        },
+        "telemetry": {
+          "bandwidth_bytes_s": 104857600,
+          "utilization": 0.15027635161617733,
+          "queue_depth": 0,
+          "goodput_bytes_s": 82524903.1103347,
+          "failures": 0,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 1.395
+        },
+        "producer": "remote-0",
+        "decoder": "local-0",
+        "worker_pids": {
+          "remote-0": 1988672,
+          "local-0": 1991144
+        }
+      },
+      {
+        "ttft_s": 0.060459915548563004,
+        "total_s": 0.7431767135858536,
+        "decode_s": 0.501947708427906,
+        "batch_size": 1,
+        "batch_queue_s": 0.00029626861214637756,
+        "generated_tokens": [
+          357,
+          59493,
+          8978,
+          25105,
+          11173,
+          33303,
+          13,
+          220
+        ],
+        "transferred_bytes": 0,
+        "target": "local",
+        "prefix_tokens": 67,
+        "destination_prefix_tokens": 67,
+        "migration": null,
+        "handoff_transport": "cache",
+        "producer": null,
+        "decoder": "local-0",
+        "worker_pids": {
+          "local-0": 1991144
+        },
+        "prefill": {
+          "cache_hit": true,
+          "prefill_s": 0,
+          "sender": {
+            "bytes": 0
+          },
+          "pipelined": false,
+          "layer_ready_s": []
+        }
+      }
+    ],
+    "local": {
+      "ttft_s": 13.670696672052145,
+      "total_s": 13.862226460129023,
+      "decode_s": 0.1886201649904251,
+      "batch_size": 1,
+      "batch_queue_s": 0.0003715530037879944,
+      "generated_tokens": [
+        357,
+        59493,
+        8978,
+        25105,
+        11173,
+        33303,
+        13,
+        220
+      ],
+      "transferred_bytes": 0,
+      "target": "local",
+      "prefix_tokens": 0,
+      "destination_prefix_tokens": 0,
+      "migration": null,
+      "handoff_transport": "rdma",
+      "prefill": {
+        "first_token": 357,
+        "prefix_tokens": 0,
+        "prefill_s": 13.302026595920324,
+        "sender": {
+          "request": "bddcb6d6b0764700b5772716e32efcd0",
+          "bytes": 21106084,
+          "failures": 0,
+          "queue_depth": 0,
+          "elapsed_s": 13.321229681372643,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 0.0,
+          "tcp_info_available": false,
+          "first_send_at": 24717239.604346465,
+          "max_queue_depth": 4,
+          "connections_opened": 4,
+          "frames_acked": 24
+        },
+        "stored": true,
+        "pipelined": true,
+        "layer_ready_s": [
+          13.051396895200014,
+          13.066077187657356,
+          13.07628958299756,
+          13.0845379345119,
+          13.089329686015844,
+          13.132736194878817,
+          13.153858613222837,
+          13.161347299814224,
+          13.167588278651237,
+          13.176548082381487,
+          13.185026861727238,
+          13.194253109395504,
+          13.200856029987335,
+          13.207769580185413,
+          13.2177251316607,
+          13.224020428955555,
+          13.231129109859467,
+          13.247732102870941,
+          13.255311753600836,
+          13.266384858638048,
+          13.272594273090363,
+          13.279808945953846,
+          13.289762143045664,
+          13.297049030661583
+        ],
+        "compute_end_s": 13.302026595920324
+      },
+      "telemetry": {
+        "bandwidth_bytes_s": 104857600,
+        "utilization": 0.0,
+        "queue_depth": 0,
+        "goodput_bytes_s": 104857600,
+        "failures": 0,
+        "retries": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0
+      },
+      "producer": "local-0",
+      "decoder": "local-1",
+      "worker_pids": {
+        "local-0": 1991144,
+        "local-1": 1993198
+      }
+    },
+    "prefix": {
+      "ttft_s": 2.0888830572366714,
+      "total_s": 2.2698159478604794,
+      "decode_s": 0.17712413147091866,
+      "batch_size": 1,
+      "batch_queue_s": 0.0003201924264431,
+      "generated_tokens": [
+        357,
+        59493,
+        8978,
+        25105,
+        11173,
+        33303,
+        13,
+        220
+      ],
+      "transferred_bytes": 20694244,
+      "target": "remote",
+      "prefix_tokens": 33,
+      "destination_prefix_tokens": 33,
+      "migration": null,
+      "handoff_transport": "tcp",
+      "prefill": {
+        "first_token": 357,
+        "prefix_tokens": 33,
+        "prefill_s": 1.638677891343832,
+        "sender": {
+          "request": "ba734ca059f844e990bff58740ad7007",
+          "bytes": 20694244,
+          "failures": 0,
+          "queue_depth": 0,
+          "elapsed_s": 1.66154595464468,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 0.973,
+          "tcp_info_available": true,
+          "first_send_at": 24717242.78258053,
+          "max_queue_depth": 3,
+          "connections_opened": 3,
+          "frames_acked": 24
+        },
+        "stored": true,
+        "pipelined": true,
+        "layer_ready_s": [
+          1.366475522518158,
+          1.376916080713272,
+          1.3864003792405128,
+          1.4022965505719185,
+          1.41768853738904,
+          1.428360152989626,
+          1.4410566911101341,
+          1.4533190540969372,
+          1.4616542123258114,
+          1.4754126816987991,
+          1.4853065200150013,
+          1.494556974619627,
+          1.508424874395132,
+          1.518979236483574,
+          1.5323284305632114,
+          1.5421218909323215,
+          1.5484188608825207,
+          1.5653951205313206,
+          1.5767252184450626,
+          1.5864106006920338,
+          1.599836554378271,
+          1.6106718964874744,
+          1.6226283833384514,
+          1.6329416818916798
+        ],
+        "compute_end_s": 1.638677891343832
+      },
+      "telemetry": {
+        "bandwidth_bytes_s": 104857600,
+        "utilization": 0.5361107152901519,
+        "queue_depth": 0,
+        "goodput_bytes_s": 71691887.44955838,
+        "failures": 0,
+        "retries": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0.842
+      },
+      "producer": "remote-0",
+      "decoder": "local-0",
+      "worker_pids": {
+        "remote-0": 1988672,
+        "local-0": 1991144
+      }
+    },
+    "full_hit_outage": {
+      "ttft_s": 0.05445064976811409,
+      "total_s": 0.2335823029279709,
+      "decode_s": 0.17676588147878647,
+      "batch_size": 1,
+      "batch_queue_s": 0.0002989731729030609,
+      "generated_tokens": [
+        357,
+        59493,
+        8978,
+        25105,
+        11173,
+        33303,
+        13,
+        220
+      ],
+      "transferred_bytes": 0,
+      "target": "local",
+      "prefix_tokens": 67,
+      "destination_prefix_tokens": 67,
+      "migration": null,
+      "handoff_transport": "cache",
+      "producer": null,
+      "decoder": "local-0",
+      "worker_pids": {
+        "local-0": 1991144
+      },
+      "prefill": {
+        "cache_hit": true,
+        "prefill_s": 0,
+        "sender": {
+          "bytes": 0
+        },
+        "pipelined": false,
+        "layer_ready_s": []
+      }
+    },
+    "branched": {
+      "ttft_s": 0.6657010279595852,
+      "total_s": 0.8447488136589527,
+      "decode_s": 0.1754831112921238,
+      "batch_size": 1,
+      "batch_queue_s": 0.00033529847860336304,
+      "generated_tokens": [
+        198,
+        7,
+        198,
+        7,
+        198,
+        7,
+        198,
+        7
+      ],
+      "transferred_bytes": 21343204,
+      "target": "remote",
+      "prefix_tokens": 0,
+      "destination_prefix_tokens": 0,
+      "migration": null,
+      "handoff_transport": "tcp",
+      "prefill": {
+        "first_token": 198,
+        "prefix_tokens": 0,
+        "prefill_s": 0.2999853827059269,
+        "sender": {
+          "request": "9b1bb202002f46b3bdf435f5cfc43a58",
+          "bytes": 21343204,
+          "failures": 0,
+          "queue_depth": 0,
+          "elapsed_s": 0.3247879929840565,
+          "retries": 0,
+          "retransmissions": 0,
+          "rtt_ms": 0.721,
+          "tcp_info_available": true,
+          "first_send_at": 24717244.963899422,
+          "max_queue_depth": 4,
+          "connections_opened": 4,
+          "frames_acked": 24
+        },
+        "stored": true,
+        "pipelined": true,
+        "layer_ready_s": [
+          0.009697042405605316,
+          0.022177424281835556,
+          0.03190317004919052,
+          0.0414225198328495,
+          0.048214204609394073,
+          0.06384379044175148,
+          0.08526736497879028,
+          0.09280994907021523,
+          0.09902531653642654,
+          0.10981344804167747,
+          0.1324370577931404,
+          0.1451352871954441,
+          0.1522652432322502,
+          0.16281844675540924,
+          0.17176978290081024,
+          0.18831278383731842,
+          0.19830771908164024,
+          0.21099577471613884,
+          0.23217085003852844,
+          0.2504830174148083,
+          0.25867709517478943,
+          0.267841424793005,
+          0.28472116589546204,
+          0.2962116487324238
+        ],
+        "compute_end_s": 0.2999853827059269
+      },
+      "telemetry": {
+        "bandwidth_bytes_s": 104857600,
+        "utilization": 0.46815957452735435,
+        "queue_depth": 0,
+        "goodput_bytes_s": 69208276.37914379,
+        "failures": 0,
+        "retries": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0.978
+      },
+      "producer": "remote-0",
+      "decoder": "local-0",
+      "worker_pids": {
+        "remote-0": 1988672,
+        "local-0": 1991144
+      }
+    },
+    "stats": {
+      "decode_calibration": {
+        "batch_max": 1,
+        "decode_step_s": 0.023864776943810284,
+        "by_batch": [
+          {
+            "batch": 1,
+            "missing_lengths": [],
+            "worst_step_s": 0.023864776943810284,
+            "min_tokens_s": 41.90275913135514,
+            "eligible": true
+          },
+          {
+            "batch": 2,
+            "missing_lengths": [],
+            "worst_step_s": 0.029391332995146513,
+            "min_tokens_s": 34.02363547666019,
+            "eligible": false
+          },
+          {
+            "batch": 3,
+            "missing_lengths": [],
+            "worst_step_s": 0.025818002643063664,
+            "min_tokens_s": 38.73266316628342,
+            "eligible": false
+          },
+          {
+            "batch": 4,
+            "missing_lengths": [],
+            "worst_step_s": 0.02599448466207832,
+            "min_tokens_s": 38.469698976523105,
+            "eligible": false
+          }
+        ],
+        "required_lengths": [
+          128,
+          1024,
+          8192,
+          32768,
+          131072
+        ],
+        "min_tokens_s": 40.0
+      },
+      "workers": {
+        "remote-0": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 16,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 10470,
+          "prefix_blocks": 10470,
+          "transfer_blocks": 0,
+          "ram_bytes": 42415602,
+          "ram_limit": 67108864,
+          "ram_hits": 159,
+          "ssd_reads": 0,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 2,
+          "ssd_payload_bytes": 42415602
+        },
+        "local-0": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 16,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 10470,
+          "prefix_blocks": 10470,
+          "transfer_blocks": 0,
+          "ram_bytes": 42415602,
+          "ram_limit": 67108864,
+          "ram_hits": 403,
+          "ssd_reads": 0,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 2,
+          "ssd_payload_bytes": 42415602
+        },
+        "local-1": {
+          "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+          "block_tokens": 16,
+          "block_bytes": 4096,
+          "capacity_blocks": 1048576,
+          "used_blocks": 0,
+          "prefix_blocks": 0,
+          "transfer_blocks": 0,
+          "ram_bytes": 0,
+          "ram_limit": 67108864,
+          "ram_hits": 122,
+          "ssd_reads": 0,
+          "evictions": 0,
+          "corrupt_blocks": 0,
+          "recovered_transfers": 0,
+          "transfers": 0,
+          "checkpoints": 0,
+          "ssd_payload_bytes": 0
+        }
+      },
+      "roles": {
+        "local-0": "decode",
+        "local-1": "decode"
+      },
+      "role_history": [
+        {
+          "node": "local-0",
+          "role": "decode",
+          "at": 24717221.552127272
+        },
+        {
+          "node": "local-0",
+          "role": "prefill",
+          "at": 24717226.526688904
+        },
+        {
+          "node": "local-0",
+          "role": "decode",
+          "at": 24717240.500983726
+        }
+      ],
+      "telemetry": {
+        "bandwidth_bytes_s": 104857600,
+        "utilization": 0.2685357719619987,
+        "queue_depth": 0,
+        "goodput_bytes_s": 67406278.35049161,
+        "failures": 0,
+        "retries": 0,
+        "retransmissions": 0,
+        "rtt_ms": 0.978
+      },
+      "rate": {
+        "bytes": 168319900,
+        "reservations": 168,
+        "rejected": 0,
+        "bandwidth_bytes_s": 104857600.0,
+        "pending_reservations": 0,
+        "queued_seconds": 0.0
+      },
+      "stage_load": {
+        "local_prefill": {
+          "utilization": 0.0,
+          "mean_queue": 0.0,
+          "queue_depth": 0,
+          "instances": 0
+        },
+        "remote_prefill": {
+          "utilization": 0.4745009093713329,
+          "mean_queue": 0.0,
+          "queue_depth": 0,
+          "instances": 1
+        },
+        "decode": {
+          "utilization": 0.10286729477722283,
+          "mean_queue": 0.0,
+          "queue_depth": 0,
+          "instances": 2
+        }
+      },
+      "outstanding_requests": 0,
+      "migrations": [
+        {
+          "source": [
+            "local",
+            "local-0"
+          ],
+          "target": [
+            "local",
+            "local-1"
+          ],
+          "length": 67,
+          "bytes_transferred": 28120840,
+          "status": "transferred"
+        }
+      ]
+    }
+  },
+  "final_stats": {
+    "decode_calibration": {
+      "batch_max": 1,
+      "decode_step_s": 0.023864776943810284,
+      "by_batch": [
+        {
+          "batch": 1,
+          "missing_lengths": [],
+          "worst_step_s": 0.023864776943810284,
+          "min_tokens_s": 41.90275913135514,
+          "eligible": true
+        },
+        {
+          "batch": 2,
+          "missing_lengths": [],
+          "worst_step_s": 0.029391332995146513,
+          "min_tokens_s": 34.02363547666019,
+          "eligible": false
+        },
+        {
+          "batch": 3,
+          "missing_lengths": [],
+          "worst_step_s": 0.025818002643063664,
+          "min_tokens_s": 38.73266316628342,
+          "eligible": false
+        },
+        {
+          "batch": 4,
+          "missing_lengths": [],
+          "worst_step_s": 0.02599448466207832,
+          "min_tokens_s": 38.469698976523105,
+          "eligible": false
+        }
+      ],
+      "required_lengths": [
+        128,
+        1024,
+        8192,
+        32768,
+        131072
+      ],
+      "min_tokens_s": 40.0
+    },
+    "workers": {
+      "remote-0": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 16,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 10470,
+        "prefix_blocks": 10470,
+        "transfer_blocks": 0,
+        "ram_bytes": 42415602,
+        "ram_limit": 67108864,
+        "ram_hits": 159,
+        "ssd_reads": 0,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 2,
+        "ssd_payload_bytes": 42415602
+      },
+      "local-0": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 16,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 10470,
+        "prefix_blocks": 10470,
+        "transfer_blocks": 0,
+        "ram_bytes": 42415602,
+        "ram_limit": 67108864,
+        "ram_hits": 403,
+        "ssd_reads": 0,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 2,
+        "ssd_payload_bytes": 42415602
+      },
+      "local-1": {
+        "namespace": "484edb5608b00108190e4e603b41320834455dcd08acb2e5e29384156d7686b2",
+        "block_tokens": 16,
+        "block_bytes": 4096,
+        "capacity_blocks": 1048576,
+        "used_blocks": 0,
+        "prefix_blocks": 0,
+        "transfer_blocks": 0,
+        "ram_bytes": 0,
+        "ram_limit": 67108864,
+        "ram_hits": 122,
+        "ssd_reads": 0,
+        "evictions": 0,
+        "corrupt_blocks": 0,
+        "recovered_transfers": 0,
+        "transfers": 0,
+        "checkpoints": 0,
+        "ssd_payload_bytes": 0
+      }
+    },
+    "roles": {
+      "local-0": "decode",
+      "local-1": "decode"
+    },
+    "role_history": [
+      {
+        "node": "local-0",
+        "role": "decode",
+        "at": 24717221.552127272
+      },
+      {
+        "node": "local-0",
+        "role": "prefill",
+        "at": 24717226.526688904
+      },
+      {
+        "node": "local-0",
+        "role": "decode",
+        "at": 24717240.500983726
+      }
+    ],
+    "telemetry": {
+      "bandwidth_bytes_s": 104857600,
+      "utilization": 0.267324520102471,
+      "queue_depth": 0,
+      "goodput_bytes_s": 67406278.35049161,
+      "failures": 0,
+      "retries": 0,
+      "retransmissions": 0,
+      "rtt_ms": 0.978
+    },
+    "rate": {
+      "bytes": 168319900,
+      "reservations": 168,
+      "rejected": 0,
+      "bandwidth_bytes_s": 104857600.0,
+      "pending_reservations": 0,
+      "queued_seconds": 0.0
+    },
+    "stage_load": {
+      "local_prefill": {
+        "utilization": 0.0,
+        "mean_queue": 0.0,
+        "queue_depth": 0,
+        "instances": 0
+      },
+      "remote_prefill": {
+        "utilization": 0.4728578360695066,
+        "mean_queue": 0.0,
+        "queue_depth": 0,
+        "instances": 1
+      },
+      "decode": {
+        "utilization": 0.10251109207593931,
+        "mean_queue": 0.0,
+        "queue_depth": 0,
+        "instances": 2
+      }
+    },
+    "outstanding_requests": 0,
+    "migrations": [
+      {
+        "source": [
+          "local",
+          "local-0"
+        ],
+        "target": [
+          "local",
+          "local-1"
+        ],
+        "length": 67,
+        "bytes_transferred": 28120840,
+        "status": "transferred"
+      }
+    ]
+  }
+}
