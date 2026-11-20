@@ -29,4 +29,6 @@ Selective routing chose remote prefill on all three long prompts. Timings includ
 
 ## Correctness and packaging
 
+Across the H100 and Mac, all 127 distinct tests ran successfully. The [H100 suite](results/followup-tests.log) passed 124 and skipped the three SSH tests, which passed on the Mac. This covered the trained six-worker federation, cross-site prefix routing, RoCE, eager/graph logit parity and KV ownership. The [H100 receipt](results/followup-tests-receipt.json) identifies the exact source and configuration.
+
 The Mac trained CPU run passed 121 of 127 tests and skipped six device or deployment checks. The dependency-free installation passed 80 and skipped 47. Both cross-host checks subsequently passed with H100 prefill and CPU decode. The `uv build --no-sources` wheel and source archive each contained all 34 package modules, byte-identical to their source files. [CPU test log](results/followup-mac-cpu.log) · [Core test log](results/followup-core.log) · [Two-host trained test](results/followup-physical.log) · [Two-host tiny test](results/followup-physical-tiny.log) · [Archive verification](results/h100-followup-package.json)
