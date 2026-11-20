@@ -141,44 +141,55 @@ class Coordinator:
             if self.controller:
                 self.controller.current=None; self.controller.last_long=None; self.controller.last_time=None
 
-    def _update_loads(self):
-        for name in self.workers:
-            cluster='local' if name.startswith('local') else 'remote'
-            load=self.roles.active.get(name,int(self.locks[name].locked()))
-            self.directory.update_load(cluster,name,load)
+    def _update_loads(self, remote=None, directory=None):
+        remote = self if remote is None else remote
+        directory = self.directory if directory is None else directory
+        for name, load in self.roles.active.items():
+            directory.update_load('local', name, load)
+        for name, lock in remote.locks.items():
+            if name.startswith('remote'):
+                directory.update_load('remote', name, int(lock.locked()))
 
-    def _choose(self,tokens,policy):
-        self._update_loads()
-        local=self.directory.best('local',self.namespace,tokens)
-        remote=self.directory.best('remote',self.namespace,tokens)
-        egress_queue=self.rate.stats()['pending_reservations']
-        in_flight = [worker.call('link') for name, worker in self.workers.items()
-                     if name.startswith('remote') and self.locks[name].locked()]
-        stats=self.monitor.snapshot(egress_queue, in_flight=in_flight)
+    def _choose(self, tokens, policy, upstream=None, directory=None, controller=None):
+        if upstream is None:
+            upstream, directory, controller = self, self.directory, self.controller
+        self._update_loads(upstream, directory)
+        local=directory.best('local',self.namespace,tokens)
+        remote=directory.best('remote',self.namespace,tokens)
+        egress_queue=upstream.rate.stats()['pending_reservations']
+        in_flight = [worker.call('link') for name, worker in upstream.workers.items()
+                     if name.startswith('remote') and upstream.locks[name].locked()]
+        stats=upstream.monitor.snapshot(egress_queue, in_flight=in_flight)
         if policy=='all-local':
             self.roles.reallocate(1); router=Router(len(tokens),False,True); abundant=False
         elif policy=='all-remote':
-            if not self.bandwidth: raise RuntimeError('remote link unavailable')
+            if not upstream.bandwidth: raise RuntimeError('remote link unavailable')
             self.roles.reallocate(0); router=Router(0,True,False); abundant=False
         else:
-            abundant=self.bandwidth>0 and stats['utilization']<.85 and egress_queue<8
+            abundant=upstream.bandwidth>0 and stats['utilization']<.85 and egress_queue<8
             uncached=len(tokens)-(max(local[1],remote[1]) if abundant else local[1])
-            if self.controller:
+            if controller:
                 samples=EmpiricalWorkload(self.observations or [uncached],low=self.measured.lengths[0],high=self.measured.lengths[-1])
-                last_long = self.controller.last_long
-                current=self.controller.update(time.monotonic(),stats['bandwidth_bytes_s'],stats['utilization'],egress_queue,
+                last_long = controller.last_long
+                stages = self.stages.snapshot()
+                if upstream is not self:
+                    stages['remote_prefill'] = upstream.stages.snapshot()['remote_prefill']
+                current=controller.update(time.monotonic(),stats['bandwidth_bytes_s'],stats['utilization'],egress_queue,
                                                workload=samples if samples.has_misses else None,
-                                               stages=self.stages.snapshot())
-                if last_long != self.controller.last_long:
+                                               stages=stages)
+                if last_long != controller.last_long:
                     self.stages.snapshot(reset=True)
-                self.roles.reallocate(current['prefill_instances']); router=self.controller.router
-                abundant=self.controller.bandwidth_abundant
+                self.roles.reallocate(current['prefill_instances']); router=controller.router
+                abundant=controller.bandwidth_abundant
             else:
-                self.roles.reallocate(1); router=Router(self.threshold,self.bandwidth>0,True)
+                self.roles.reallocate(1); router=Router(self.threshold,upstream.bandwidth>0,True)
         placement=router.route(len(tokens),local[1],remote[1],abundant)
         return placement,{'local':local,'remote':remote},stats
 
     def run(self,tokens,output_tokens=8,policy='selective'):
+        return self._run(tokens, output_tokens, policy, self, self.directory, self.controller)
+
+    def _run(self, tokens, output_tokens, policy, upstream, directory, controller):
         if policy not in ('selective','all-local','all-remote'): raise ValueError('invalid policy')
         if not isinstance(tokens,list) or not tokens or any(type(t) is not int or t<0 for t in tokens): raise ValueError('invalid tokens')
         count(output_tokens,'output tokens',zero=False)
@@ -189,12 +200,13 @@ class Coordinator:
         try:
             while True:
                 with self.control_lock:
-                    placement,hits,telemetry=self._choose(tokens,policy)
+                    placement,hits,telemetry=self._choose(tokens,policy,upstream,directory,controller)
                     decoders=self.roles.available('decode')
-                    producers=self.roles.available('prefill') if placement.target=='local' else [n for n in self.workers if n.startswith('remote')]
+                    producer_pool = self if placement.target=='local' else upstream
+                    producers=self.roles.available('prefill') if placement.target=='local' else [n for n in upstream.workers if n.startswith('remote')]
                     decoders.sort(key=lambda n:(-self.directory._client(('local',n),self.namespace).match_length(tokens),n))
                     producers.sort(key=lambda n:(n!=hits[placement.target][0],n))
-                    producer = next((p for p in producers if not self.locks[p].locked()), None)
+                    producer = next((p for p in producers if not producer_pool.locks[p].locked()), None)
                     decoder = next((d for d in decoders if self.roles.active[d] < self.config['max_batch']), None)
                     blocked = []
                     if producer is None:
@@ -203,23 +215,25 @@ class Coordinator:
                         blocked.append('decode')
                     self.stages.waiting(request, blocked)
                     if not blocked:
-                        self.locks[producer].acquire(); acquired.append(producer)
+                        producer_pool.locks[producer].acquire(); acquired.append(producer)
                         roles.enter_context(self.roles.acquire(decoder,'decode'))
                         if placement.target=='local': production.enter_context(self.roles.acquire(producer,'prefill'))
-                        production.enter_context(self.stages.working(producer))
+                        production.enter_context(producer_pool.stages.working(producer))
                         break
                 time.sleep(.01)
             with roles:
                 roles.callback(self._discard,decoder,request)
                 destination=self.workers[decoder].call('prepare',request=request,tokens=tokens)
                 cross=placement.target=='remote' or placement.migrate_prefix
-                bandwidth=self.bandwidth
+                bandwidth=upstream.bandwidth
                 if cross and not bandwidth: raise RuntimeError('remote link unavailable')
                 migration=None; moved=0
                 source_node=hits[placement.prefix_source][0]
-                if placement.prefix_tokens and source_node and source_node!=producer:
+                source_site = upstream if placement.prefix_source == 'remote' else self
+                can_migrate = placement.prefix_source == placement.target or source_site.bandwidth > 0
+                if placement.prefix_tokens and source_node and source_node!=producer and can_migrate:
                     before=time.perf_counter()
-                    migration=self.directory.migrate((placement.prefix_source,source_node),(placement.target,producer),
+                    migration=directory.migrate((placement.prefix_source,source_node),(placement.target,producer),
                         self.namespace,tokens,budget_bytes=self.config['cache_bytes']//2)
                     if placement.prefix_source!=placement.target:
                         moved=migration.bytes_transferred
@@ -227,17 +241,17 @@ class Coordinator:
                     self.receipts.append(asdict(migration))
                 rdma = bool(self.config['local_rdma_address'] and placement.target=='local')
                 endpoint = 'rdma_receiver' if rdma else 'receiver'
-                pref=self.workers[producer].call('prefill',request=request,tokens=tokens,
+                pref=producer_pool.workers[producer].call('prefill',request=request,tokens=tokens,
                     fingerprints=destination['fingerprints'],rdma=rdma,destination=self.workers[decoder].info[endpoint],destination_prefix=destination['prefix_tokens'],
                     rate_limit=placement.target=='remote')
                 with self.control_lock: self.observations.append(len(tokens)-pref['prefix_tokens'])
                 if placement.target=='remote':
-                    moved+=pref['sender']['bytes']; self.monitor.record(pref['sender'])
+                    moved+=pref['sender']['bytes']; upstream.monitor.record(pref['sender'])
                 if migration and migration.bytes_transferred and placement.prefix_source!=placement.target:
-                    self.monitor.record({'bytes':migration.bytes_transferred,'elapsed_s':migration_elapsed})
+                    source_site.monitor.record({'bytes':migration.bytes_transferred,'elapsed_s':migration_elapsed})
                 with self.control_lock:
                     production.close()
-                    self.locks[producer].release(); acquired.remove(producer)
+                    producer_pool.locks[producer].release(); acquired.remove(producer)
                 self.workers[decoder].call('consume',rdma=rdma,request=request,first_token=pref['first_token'])
                 ttft=time.perf_counter()-start
                 decoded=self._decode(decoder,request,output_tokens)
@@ -246,18 +260,18 @@ class Coordinator:
                     generated_tokens=decoded['generated_tokens'],transferred_bytes=moved,target=placement.target,
                     prefix_tokens=pref['prefix_tokens'],destination_prefix_tokens=destination['prefix_tokens'],
                     migration=asdict(migration) if migration else None,handoff_transport='rdma' if rdma else 'tcp',prefill=pref,telemetry=telemetry,
-                    producer=producer,decoder=decoder,worker_pids={n:self.workers[n].info['pid'] for n in (producer,decoder)})
+                    producer=producer,decoder=decoder,worker_pids={producer:producer_pool.workers[producer].info['pid'],decoder:self.workers[decoder].info['pid']})
         except Exception as error:
-            if getattr(error,'transport_stats',None): self.monitor.record(error.transport_stats)
+            if getattr(error,'transport_stats',None): upstream.monitor.record(error.transport_stats)
             raise
         finally:
             self.stages.waiting(request)
             production.close()
             for n in acquired:
-                try: self.workers[n].call('discard',request=request)
+                try: producer_pool.workers[n].call('discard',request=request)
                 except Exception: pass
             with self.control_lock:
-                for n in acquired: self.locks[n].release()
+                for n in acquired: producer_pool.locks[n].release()
                 self.queue-=1
 
     def _cached(self,tokens,output_tokens,start,request):

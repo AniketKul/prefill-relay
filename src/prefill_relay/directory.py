@@ -50,10 +50,12 @@ class GlobalDirectory:
             return [(c, n, client, self._loads[(c, n)]) for (c, n, ns), client in self._nodes.items()
                     if ns == namespace and (cluster is None or c == cluster)]
 
-    def best(self, cluster, namespace, tokens):
+    def best(self, cluster, namespace, tokens, nodes=None):
         """Return (node, reusable tokens), preferring lower load on ties."""
         ranked = []
         for c, node, client, load in self._candidates(namespace, cluster):
+            if nodes is not None and node not in nodes:
+                continue
             try: length = client.match_length(tokens)
             except (ConnectionError, TimeoutError): continue
             ranked.append((length, -load, node))
