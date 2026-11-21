@@ -68,4 +68,6 @@ All 180 measured requests completed with zero errors. 0 met the 40 decode-token/
 
 [Native continuation timings](results/native-decode-benchmark.json) compare the old per-token restoration path with one restoration per 32-token continuation on the same loaded model. The stored throughput counts all 32 output tokens, including the first token available from cached logits; it is a different metric from the workload decode SLO. [Convolution measurements](cuda-kernels.md) show context-dependent prefill gains. The [synthetic SSD benchmark](results/storage-microbenchmark.json) compares identical checkpoint payloads and durability on macOS; its storage improvement is not an inference speedup.
 
-The supplied deployment launches workers on one host. Physical multi-host/WAN/RDMA behavior, heterogeneous GPU fleets, unavailable model weights and production availability are unverified. Directory metadata is in memory; cache data is persistent. Raw tensor transport assumes a trusted private network and is not authenticated or encrypted. These limits are part of the executable deployment's scope.
+These initial runs used one host. Later tests verified H100-to-Mac handoff over TCP and same-host RoCE. Physical WAN performance, cross-host RoCE, heterogeneous GPU fleets and production availability remain unmeasured. [H100 and two-host validation](h100-followup.md)
+
+The directory stores metadata in memory and cache data persists on disk. Raw tensor transport assumes a trusted private network and provides neither authentication nor encryption.

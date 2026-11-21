@@ -4,7 +4,8 @@ The results below use one H100 PCIe 80 GB. The trained serving runs use Qwen3.5-
 
 | Measurement | Observed result |
 |---|---|
-| [Physical two-host trained handoff](results/two-host-trained.json) | All eight generated tokens matched unsplit H100 inference. The cold handoff carried 20,419,660 bytes. A decoder cache hit returned the same tokens with zero cross-host bytes. |
+| [Physical two-host trained handoff](results/two-host-trained.json) | All eight generated tokens matched unsplit H100 inference. The cold handoff carried 20,419,660 bytes. A decoder cache hit reproduced the same tokens with zero cross-host KV bytes. |
+| [Narrated two-host counting demo](../README.md#demo) | A separate 14-token prompt transferred 20,444,644 KV bytes on the cold request. The Mac reused the full prompt cache on both repeats, including one with KV egress capped at 0 B/s. All three runs matched the nine output tokens from the H100 reference. |
 | [Local RoCE and remote TCP](results/followup-service.json) | A 67-token cold request opened four TCP connections. Local prefill used four host-memory RoCE connections on the H100 host. The 33-token partial hit continued correctly. Four concurrent complete hits decoded as a batch of four. |
 | [128K end-to-end handoff](results/followup-long.json) | The cold 131,072-token request transferred 1,656,048,772 bytes, with 74.77 s to first token. All four generated tokens matched unsplit inference. |
 | [Incremental migration](results/followup-migration.json) | Extending an 8,192-token destination checkpoint to 16,384 tokens transferred 161,472,631 bytes. A cold migration of the same state used 295,754,359 bytes. |
@@ -45,7 +46,7 @@ Each policy served one 1,024-token prompt and generated 1,024 output tokens with
 
 ## Arrival workloads with the calibrated decoder
 
-All 180 requests completed. Each scenario ran 12 identical prompts per policy and generated eight tokens per request. The three policies produced the same output for every matched input. Nineteen requests sustained at least 40 decode tokens/s, including 12 complete-cache-hit requests in the warm scenario. [Per-request measurements](results/followup-combined-suite.json) · [Source and command](results/followup-combined-suite-receipt.json)
+All 180 requests completed. Within each scenario, each policy received the same sequence of 12 prompts and generated eight tokens per request. The three policies produced the same output for every matched input. Nineteen requests sustained at least 40 decode tokens/s, including 12 complete-cache-hit requests in the warm scenario. [Per-request measurements](results/followup-combined-suite.json) · [Source and command](results/followup-combined-suite-receipt.json)
 
 | Scenario | Requests at 40 tokens/s, local / remote / selective | P90 TTFT (s), local / remote / selective | Cross-cluster MB, remote / selective |
 |---|---:|---:|---:|

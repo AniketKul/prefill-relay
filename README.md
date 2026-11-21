@@ -1,8 +1,14 @@
 # prefill-relay
 
-prefill-relay routes prefill between local and remote worker processes, transfers hybrid attention state over TCP, and decodes locally. It includes a trained model backend, persistent prefix caching, bandwidth-aware placement, decoder batching, and arrival-driven benchmarks.
+prefill-relay can process an LLM prompt on one machine and continue generating tokens on another. It chooses where to run prefill based on available bandwidth and cached prompt state, transfers hybrid attention state over TCP, and batches compatible requests for local decoding.
 
-The default deployment runs prefill and decode processes on one host and one shared GPU. The coordinator can also launch prefill on a separate SSH host. Remote traffic uses TCP with an aggregate bandwidth budget. On a host with a configured RDMA interface, local workers can hand state to one another over RoCE.
+## Demo
+
+Watch an H100 start counting and a Mac finish the sequence. On the two repeat requests, the Mac reuses all 14 prompt tokens and generates the same answer with zero cross-host KV bytes. The 52-second demo includes AI-generated narration.
+
+https://github.com/user-attachments/assets/442b9afb-09d0-4f4c-82b9-c7ff93bcd951
+
+The benchmark defaults to CPU workers on one host. In the single-host H100 runs, prefill and decode workers share one GPU. The coordinator can also launch prefill on a separate SSH host. Remote traffic uses TCP with an aggregate bandwidth budget. On a host with a configured RDMA interface, local workers can hand state to one another over RoCE.
 
 [H100 and two-host validation](docs/h100-followup.md) records the measured limits, raw results and tested source revisions.
 
